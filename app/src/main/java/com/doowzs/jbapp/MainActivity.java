@@ -1,7 +1,5 @@
 package com.doowzs.jbapp;
 
-import com.doowzs.jbapp.JBOnlineAPI;
-
 import android.app.Activity;
 
 import androidx.appcompat.app.ActionBar;
@@ -9,21 +7,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
-import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.drawerlayout.widget.DrawerLayout;
 
-import android.widget.ArrayAdapter;
-import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity
@@ -40,9 +32,10 @@ public class MainActivity extends AppCompatActivity
     private CharSequence mTitle;
 
     /**
-     * Used for JB Online API connections.
+     * Request to login.
      */
-    private JBOnlineAPI api;
+    private JBAppApplication mApp = null;
+    private SharedPreferences mPrefs = null;
     private final int REQUEST_LOGIN = 1;
 
     @Override
@@ -59,8 +52,13 @@ public class MainActivity extends AppCompatActivity
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
-        api = new JBOnlineAPI();
-        if (!api.hasToken()) {
+        // Check Login Status
+        mApp = ((JBAppApplication) getApplication());
+        mPrefs = this.getSharedPreferences(getPackageName(), MODE_PRIVATE);
+        if (mPrefs.contains(mApp.getTokenKey())) {
+            Toast.makeText(this, "Logged in!", Toast.LENGTH_LONG).show();
+            // TODO: add more logic
+        } else {
             Intent loginIntent = new Intent(this, LoginActivity.class);
             this.startActivityForResult(loginIntent, REQUEST_LOGIN);
         }

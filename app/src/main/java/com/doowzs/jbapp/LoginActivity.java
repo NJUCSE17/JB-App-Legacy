@@ -1,12 +1,12 @@
 package com.doowzs.jbapp;
 
-import com.doowzs.jbapp.JBOnlineAPI;
-
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 
 import android.os.Build;
@@ -19,6 +19,23 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.google.android.material.textfield.TextInputEditText;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -27,24 +44,21 @@ import androidx.appcompat.app.AppCompatActivity;
  */
 public class LoginActivity extends AppCompatActivity {
 
-    /**
-     * Keep track of the login task to ensure we can cancel it if requested.
-     */
+    // Application Context
+    JBAppApplication mApp = null;
+    SharedPreferences mPrefs = null;
+
+    // Keep track of the login task to ensure we can cancel it if requested.
     private UserLoginTask mAuthTask = null;
+    private RequestQueue mQueue = null;
 
-    /**
-     * JB Online Web API adapter
-     */
-    private JBOnlineAPI api = null;
-
-    /**
-     * Intent for reporting result.
-     */
-    Intent indent = null;
+    // Intent for reporting result.
+    Intent mIndent = null;
+    Context mContext = null;
 
     // UI references.
-    private EditText mStudentIDView;
-    private EditText mPasswordView;
+    private TextInputEditText mStudentIDView;
+    private TextInputEditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
 
@@ -53,12 +67,15 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        api = new JBOnlineAPI();
-        indent = getIntent();
+        mApp = ((JBAppApplication) getApplication());
+        mPrefs = this.getSharedPreferences(getPackageName(), Context.MODE_PRIVATE);
+        mQueue = Volley.newRequestQueue(this);
+        mIndent = getIntent();
+        mContext = getBaseContext();
 
         // Set up the login form.
-        mStudentIDView = (EditText) findViewById(R.id.student_id);
-        mPasswordView = (EditText) findViewById(R.id.password);
+        mStudentIDView = (TextInputEditText) findViewById(R.id.student_id);
+        mPasswordView = (TextInputEditText) findViewById(R.id.password);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
@@ -196,23 +213,70 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(Void... params) {
             try {
-                return api.login(mStudentID, mPassword);
-            } catch (Exception e) {
+                Map<String, String> jParams = new HashMap<String, String>();
+                jParams.put("student_id", mStudentID);
+                jParams.put("password", mPassword);
+                JSONObject jsonParams = new JSONObject(jParams);
+                JsonObjectRequest loginRequest = new JsonObjectRequest(
+                        Request.Method.POST, mApp.getLoginURL(), jsonParams,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject data) {
+                                mAuthTask = null;
+                                showProgress(false);
+                                try {
+                                    if (data.getString("status").equals("success")) {
+                                        mPrefs.edit().putString(mApp.getTokenKey(), data.getString("token")).apply();
+                                        Toast.makeText(mContext, data.getString("token"), Toast.LENGTH_LONG).show();
+                                        setResult(RESULT_OK, mIndent);
+                                        finish();
+                                    } else {
+                                        mPasswordView.setText("");
+                                        mPasswordView.setError(getString(R.string.error_incorrect_password));
+                                        mPasswordView.requestFocus();
+                                    }
+                                } catch (JSONException jex) {
+                                    mAuthTask = null;
+                                    showProgress(false);
+                                    Toast.makeText(mContext, jex.toString(), Toast.LENGTH_LONG).show();
+                                }
+                            }
+                        }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError vex) {
+                        mAuthTask = null;
+                        showProgress(false);
+                        if (vex.getClass() == AuthFailureError.class) {
+                            mPasswordView.setText("");
+                            mPasswordView.setError(getString(R.string.error_incorrect_password));
+                            mPasswordView.requestFocus();
+                        } else {
+                            Toast.makeText(mContext, vex.toString(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }) {
+                    @Override
+                    public Map<String, String> getHeaders() throws AuthFailureError {
+                        Map<String, String> headers = new HashMap<String, String>();
+                        headers.put("User-Agent", mApp.getAgentName());
+                        headers.put("Accept", "application/json");
+                        return headers;
+                    }
+                };
+                mQueue.add(loginRequest);
+                return true;
+            } catch (Exception ex) {
+                Toast.makeText(mContext, ex.toString(), Toast.LENGTH_SHORT).show();
                 return false;
             }
         }
 
         @Override
         protected void onPostExecute(final Boolean success) {
-            mAuthTask = null;
-            showProgress(false);
-
-            if (success) {
-                setResult(RESULT_OK, indent);
-                finish();
-            } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
+            // Let Volley handle the result.
+            if (!success) {
+                mAuthTask = null;
+                showProgress(false);
             }
         }
 
