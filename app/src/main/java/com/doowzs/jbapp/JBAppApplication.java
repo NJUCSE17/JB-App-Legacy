@@ -48,4 +48,12 @@ public class JBAppApplication extends Application {
     public String getLoginURL() {
         return rootURL + "login";
     }
+
+    /**
+     * Get the assignments API URL.
+     * @return assignmentsURL
+     */
+    public String getAssignmentsURL() {
+        return rootURL + "assignments";
+    }
 }

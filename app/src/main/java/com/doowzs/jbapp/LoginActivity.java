@@ -1,4 +1,5 @@
 package com.doowzs.jbapp;
+import com.doowzs.jbapp.BuildConfig;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -7,6 +8,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.os.AsyncTask;
 
 import android.os.Build;
@@ -65,6 +67,10 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        TextView versionTextView = findViewById(R.id.textView_version);
+        String version = R.string.version + " " + BuildConfig.VERSION_CODE;
+        versionTextView.setText(version);
         setContentView(R.layout.activity_login);
 
         mApp = ((JBAppApplication) getApplication());

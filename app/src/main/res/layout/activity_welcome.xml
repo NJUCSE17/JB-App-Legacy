@@ -43,6 +43,14 @@
                 android:text="Powered by JB Online"
                 android:textAlignment="center"
                 android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/textView_version"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:textAlignment="center" />
         </LinearLayout>
 
     </com.google.android.material.circularreveal.coordinatorlayout.CircularRevealCoordinatorLayout>
