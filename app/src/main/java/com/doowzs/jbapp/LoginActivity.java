@@ -67,10 +67,6 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        TextView versionTextView = findViewById(R.id.textView_version);
-        String version = R.string.version + " " + BuildConfig.VERSION_CODE;
-        versionTextView.setText(version);
         setContentView(R.layout.activity_login);
 
         mApp = ((JBAppApplication) getApplication());

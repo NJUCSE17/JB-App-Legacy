@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -24,6 +25,9 @@ public class WelcomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
+
+        TextView versionTextView = findViewById(R.id.textView_version);
+        versionTextView.setText(BuildConfig.VERSION_NAME);
 
         mApp = ((JBAppApplication) this.getApplication());
         mPrefs = this.getSharedPreferences(getPackageName(), MODE_PRIVATE);
@@ -46,7 +50,6 @@ public class WelcomeActivity extends AppCompatActivity {
                     Intent loginIntent = new Intent(WelcomeActivity.this, LoginActivity.class);
                     startActivityForResult(loginIntent, REQUEST_LOGIN);
                 }
-                finish();
             }
         }, 2000);
     }
