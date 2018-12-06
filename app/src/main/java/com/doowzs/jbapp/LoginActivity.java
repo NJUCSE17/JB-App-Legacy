@@ -226,8 +226,10 @@ public class LoginActivity extends AppCompatActivity {
                                 showProgress(false);
                                 try {
                                     if (data.getString("status").equals("success")) {
-                                        mPrefs.edit().putString(mApp.getTokenKey(), data.getString("token")).apply();
-                                        Toast.makeText(mContext, data.getString("token"), Toast.LENGTH_LONG).show();
+                                        mPrefs.edit().putString(mApp.getTokenKey(), data.getString("token"))
+                                                .putString(mApp.getIdKey(), data.getString("user_id"))
+                                                .putString(mApp.getNameKey(), data.getString("user_name"))
+                                                .apply();
                                         setResult(RESULT_OK, mIndent);
                                         finish();
                                     } else {

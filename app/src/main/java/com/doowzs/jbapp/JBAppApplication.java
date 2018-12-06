@@ -5,6 +5,8 @@ import android.app.Application;
 public class JBAppApplication extends Application {
     private final String agentName = "JB App (Android)";
     private final String tokenKey =  "com.doowzs.jbapp.token";
+    private final String idKey =  "com.doowzs.jbapp.user_id";
+    private final String nameKey =  "com.doowzs.jbapp.user_name";
     private final String rootURL = "http://192.168.1.140:8000/api/";
 
     /**
@@ -21,6 +23,22 @@ public class JBAppApplication extends Application {
      */
     public String getTokenKey() {
         return tokenKey;
+    }
+
+    /**
+     * Get the key to user id in shared prefs.
+     * @return key to ID
+     */
+    public String getIdKey() {
+        return idKey;
+    }
+
+    /**
+     * Get the key to user name in shared prefs.
+     * @return key to username
+     */
+    public String getNameKey() {
+        return nameKey;
     }
 
     /**
