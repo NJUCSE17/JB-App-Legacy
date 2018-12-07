@@ -249,6 +249,7 @@ public class MainActivity extends AppCompatActivity {
                                     if (mSwipeRefreshLayout.isRefreshing()) {
                                         mSwipeRefreshLayout.setRefreshing(false);
                                     }
+                                    Snackbar.make(mCoordinatorLayout, getString(R.string.info_updated), Snackbar.LENGTH_SHORT).show();
                                 } catch (JSONException jex) {
                                     Snackbar.make(mCoordinatorLayout, jex.toString(), Snackbar.LENGTH_LONG).show();
                                 }
