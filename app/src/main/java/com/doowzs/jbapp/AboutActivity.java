@@ -22,7 +22,7 @@ public class AboutActivity extends AppCompatActivity {
         try {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         } catch (Exception ex) {
-            Toast.makeText(this, ex.toString(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, ex.getLocalizedMessage(), Toast.LENGTH_LONG).show();
         }
 
         TextView versionTextView = findViewById(R.id.versionTextView);

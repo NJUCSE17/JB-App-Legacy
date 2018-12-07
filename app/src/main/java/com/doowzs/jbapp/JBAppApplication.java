@@ -8,7 +8,7 @@ public class JBAppApplication extends Application {
     private final String idKey =  "com.doowzs.jbapp.user_id";
     private final String nameKey =  "com.doowzs.jbapp.user_name";
     private final String assignmentsKey =  "com.doowzs.jbapp.assignments";
-    private final String rootURL = "http://192.168.1.140:8000/api/";
+    private final String rootURL = "https://njujb.com/api/";
 
     /**
      * Get the agent name

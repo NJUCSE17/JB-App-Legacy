@@ -242,7 +242,7 @@ public class LoginActivity extends AppCompatActivity {
                                 } catch (JSONException jex) {
                                     mAuthTask = null;
                                     showProgress(false);
-                                    Toast.makeText(mContext, jex.toString(), Toast.LENGTH_LONG).show();
+                                    Toast.makeText(mContext, jex.getLocalizedMessage(), Toast.LENGTH_LONG).show();
                                 }
                             }
                         }, new Response.ErrorListener() {
@@ -255,7 +255,7 @@ public class LoginActivity extends AppCompatActivity {
                             mPasswordView.setError(getString(R.string.error_incorrect_password));
                             mPasswordView.requestFocus();
                         } else {
-                            Toast.makeText(mContext, vex.toString(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(mContext, vex.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
                         }
                     }
                 }) {
@@ -270,7 +270,7 @@ public class LoginActivity extends AppCompatActivity {
                 mQueue.add(loginRequest);
                 return true;
             } catch (Exception ex) {
-                Toast.makeText(mContext, ex.toString(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(mContext, ex.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
                 return false;
             }
         }

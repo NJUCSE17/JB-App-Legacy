@@ -4,7 +4,6 @@ import com.doowzs.jbapp.utils.JSONSharedPreferences;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.view.GravityCompat;
@@ -43,12 +42,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.ocpsoft.prettytime.PrettyTime;
-import org.w3c.dom.Text;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -167,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
             JSONArray assignmentsArray = JSONSharedPreferences.loadJSONArray(mContext, getPackageName(), mApp.getAssignmentsKey());
             loadAssignmentsToLayout(assignmentsArray);
         } catch (JSONException jex) {
-            Toast.makeText(this, jex.toString(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, jex.getLocalizedMessage(), Toast.LENGTH_LONG).show();
         }
 
         // Fetch latest assignments
@@ -191,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
                 finish();
             }
         } catch (Exception ex) {
-            Toast.makeText(this, ex.toString(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, ex.getLocalizedMessage(), Toast.LENGTH_LONG).show();
             this.setResult(RESULT_CANCELED);
             finish();
         }
@@ -229,12 +225,7 @@ public class MainActivity extends AppCompatActivity {
                         + mPrefs.getString(mApp.getNameKey(), "Anonymous"))
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        mPrefs.edit().remove(mApp.getTokenKey())
-                                .remove(mApp.getIdKey())
-                                .remove(mApp.getNameKey())
-                                .apply();
-                        Intent loginIntent = new Intent(MainActivity.this, LoginActivity.class);
-                        startActivityForResult(loginIntent, REQUEST_LOGIN);
+                        doPerformLogout();
                     }
                 })
                 .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
@@ -244,6 +235,18 @@ public class MainActivity extends AppCompatActivity {
                 })
                 .setIcon(getDrawable(R.drawable.ic_exclamation_circle))
                 .show();
+    }
+
+    /**
+     * Handler of true logout event
+     */
+    private void doPerformLogout() {
+        mPrefs.edit().remove(mApp.getTokenKey())
+                .remove(mApp.getIdKey())
+                .remove(mApp.getNameKey())
+                .apply();
+        Intent loginIntent = new Intent(MainActivity.this, LoginActivity.class);
+        startActivityForResult(loginIntent, REQUEST_LOGIN);
     }
 
     /**
@@ -294,7 +297,7 @@ public class MainActivity extends AppCompatActivity {
                         Date ddlDate = oldDateFormat.parse(oldDDLStr);
                         newDDLStr = newDateFormat.format(ddlDate) + "\n" + prettyTime.format(ddlDate);
                     } catch (java.text.ParseException jtpex) {
-                        Toast.makeText(this, jtpex.toString(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, jtpex.getLocalizedMessage(), Toast.LENGTH_LONG).show();
                     }
                     TextView textView2 = new TextView(mContext);
                     textView2.setText(newDDLStr);
@@ -315,7 +318,7 @@ public class MainActivity extends AppCompatActivity {
                 textView.setPadding(dp8, dp8 * 2, dp8, dp8 * 2);
                 mLinearLayout.addView(textView);
             } catch (JSONException jex) {
-                Toast.makeText(this, jex.toString(), Toast.LENGTH_LONG).show();
+                Toast.makeText(this, jex.getLocalizedMessage(), Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -342,13 +345,27 @@ public class MainActivity extends AppCompatActivity {
                                     }
                                     Snackbar.make(mCoordinatorLayout, getString(R.string.info_updated), Snackbar.LENGTH_SHORT).show();
                                 } catch (JSONException jex) {
-                                    Snackbar.make(mCoordinatorLayout, jex.toString(), Snackbar.LENGTH_LONG).show();
+                                    Snackbar.make(mCoordinatorLayout, jex.getLocalizedMessage(), Snackbar.LENGTH_LONG).show();
                                 }
                             }
                         }, new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError vex) {
-                        Snackbar.make(mCoordinatorLayout, vex.toString(), Snackbar.LENGTH_LONG).show();
+                        if (vex instanceof AuthFailureError) {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                            builder.setTitle(R.string.error_auth_failure_title)
+                                    .setMessage(R.string.error_auth_failure_content)
+                                    .setIcon(R.drawable.ic_user_times)
+                                    .setNeutralButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            // do nothing
+                                        }
+                                    }).show();
+                            // revoke all credentials and request login
+                            doPerformLogout();
+                        }
+                        Snackbar.make(mCoordinatorLayout, vex.getLocalizedMessage(), Snackbar.LENGTH_LONG).show();
                     }
                 }) {
                     @Override
@@ -363,7 +380,7 @@ public class MainActivity extends AppCompatActivity {
                 mQueue.add(getAssignmentsRequest);
                 return true;
             } catch (Exception ex) {
-                Snackbar.make(mCoordinatorLayout, ex.toString(), Snackbar.LENGTH_LONG).show();
+                Snackbar.make(mCoordinatorLayout, ex.getLocalizedMessage(), Snackbar.LENGTH_LONG).show();
                 return false;
             }
         }

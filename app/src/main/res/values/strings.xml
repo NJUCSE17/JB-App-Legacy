@@ -31,6 +31,8 @@
     <string name="error_invalid_password">This password is too short.</string>
     <string name="error_incorrect_password">This password is incorrect.</string>
     <string name="error_field_required">This field is required.</string>
+    <string name="error_auth_failure_title">Auth Failure</string>
+    <string name="error_auth_failure_content">Credential is not correct or token has expired. You need to login again.</string>
 
     <!-- Main Activity -->
     <string name="info_updated">Assignments updated.</string>
