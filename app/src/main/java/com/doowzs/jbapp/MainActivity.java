@@ -68,9 +68,6 @@ public class MainActivity extends AppCompatActivity {
     private RequestQueue mQueue = null;
     private GetAssignmentsTask mGetAssignmentsTask = null;
 
-    // Constants
-    private final int REQUEST_LOGIN = 1;
-
     /**
      * Create the activity
      * @param savedInstanceState (not used)
@@ -174,28 +171,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Deals with result from intents
-     * @param requestCode the request code of intent
-     * @param resultCode the result from intent
-     * @param data intent itself
-     */
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        try {
-            super.onActivityResult(requestCode, resultCode, data);
-
-            if (requestCode == REQUEST_LOGIN && resultCode == RESULT_CANCELED) {
-                this.setResult(RESULT_CANCELED);
-                finish();
-            }
-        } catch (Exception ex) {
-            Toast.makeText(this, ex.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-            this.setResult(RESULT_CANCELED);
-            finish();
-        }
-    }
-
-    /**
      * Action Bar menu handler
      * @param item menu of action bar
      * @return boolean
@@ -247,7 +222,8 @@ public class MainActivity extends AppCompatActivity {
                 .apply();
         JSONSharedPreferences.remove(mContext, getPackageName(), mApp.getAssignmentsKey());
         Intent loginIntent = new Intent(MainActivity.this, LoginActivity.class);
-        startActivityForResult(loginIntent, REQUEST_LOGIN);
+        startActivity(loginIntent);
+        finish(); // destroy MainActivity
     }
 
     /**

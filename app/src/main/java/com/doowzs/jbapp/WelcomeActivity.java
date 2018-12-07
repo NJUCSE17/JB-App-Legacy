@@ -16,10 +16,6 @@ public class WelcomeActivity extends AppCompatActivity {
     // Shared Preferences and Application
     private JBAppApplication mApp;
     private SharedPreferences mPrefs;
-    private Context mContext;
-
-    // Constants
-    private final int REQUEST_LOGIN = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,7 +27,6 @@ public class WelcomeActivity extends AppCompatActivity {
 
         mApp = ((JBAppApplication) this.getApplication());
         mPrefs = this.getSharedPreferences(getPackageName(), MODE_PRIVATE);
-        mContext = this.getBaseContext();
 
         if (mPrefs.contains(mApp.getTokenKey())) {
             Snackbar.make(findViewById(R.id.welcome_coordinator_layout),
@@ -48,31 +43,10 @@ public class WelcomeActivity extends AppCompatActivity {
                     startActivity(mainIntent);
                 } else {
                     Intent loginIntent = new Intent(WelcomeActivity.this, LoginActivity.class);
-                    startActivityForResult(loginIntent, REQUEST_LOGIN);
+                    startActivity(loginIntent);
                 }
+                finish();
             }
         }, 2000);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        try {
-            super.onActivityResult(requestCode, resultCode, data);
-
-            if (requestCode == REQUEST_LOGIN) {
-                if (resultCode == RESULT_OK) {
-                    Intent mainIntent = new Intent(WelcomeActivity.this, MainActivity.class);
-                    startActivity(mainIntent);
-                    finish();
-                } else if (resultCode == RESULT_CANCELED){
-                    this.setResult(RESULT_CANCELED);
-                    finish();
-                }
-            }
-        } catch (Exception ex) {
-            Toast.makeText(this, ex.toString(), Toast.LENGTH_LONG).show();
-            this.setResult(RESULT_CANCELED);
-            finish();
-        }
     }
 }
