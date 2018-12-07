@@ -42,9 +42,16 @@ import com.google.android.material.snackbar.Snackbar;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.ocpsoft.prettytime.PrettyTime;
 import org.w3c.dom.Text;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
@@ -254,6 +261,9 @@ public class MainActivity extends AppCompatActivity {
             textView.setText(getString(R.string.info_no_assignment));
             mLinearLayout.addView(textView);
         } else {
+            PrettyTime prettyTime = new PrettyTime();
+            DateFormat oldDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()),
+                newDateFormat = new SimpleDateFormat("yyyy-MM-dd (E) HH:mm:ss", Locale.getDefault());
             mLinearLayout.setGravity(Gravity.NO_GRAVITY);
             try {
                 for (int i = 0; i < assignmentArray.length(); ++i) {
@@ -278,8 +288,16 @@ public class MainActivity extends AppCompatActivity {
                     WebView webView = new WebView(mContext);
                     webView.loadData(assignmentObject.getString("content"), "text/html; charset=UTF-8", null);
 
+                    String oldDDLStr = null, newDDLStr = null;
+                    try {
+                        oldDDLStr = assignmentObject.getString("due_time");
+                        Date ddlDate = oldDateFormat.parse(oldDDLStr);
+                        newDDLStr = newDateFormat.format(ddlDate) + "\n" + prettyTime.format(ddlDate);
+                    } catch (java.text.ParseException jtpex) {
+                        Toast.makeText(this, jtpex.toString(), Toast.LENGTH_LONG).show();
+                    }
                     TextView textView2 = new TextView(mContext);
-                    textView2.setText(assignmentObject.getString("due_time"));
+                    textView2.setText(newDDLStr);
                     textView2.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
 
                     linearLayout.addView(textView);
