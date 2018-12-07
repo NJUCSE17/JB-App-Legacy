@@ -8,6 +8,7 @@
     <string name="title_activity_main">Assignments</string>
     <string name="title_activity_login">Sign in</string>
     <string name="title_activity_about">About</string>
+    <string name="title_activity_menu">Menu</string>
 
     <!-- Navigation Bar -->
     <string name="nav_home">Home</string>

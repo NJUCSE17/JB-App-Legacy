@@ -106,11 +106,13 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onDrawerOpened(View drawerView) {
+                        mActionbar.setTitle(R.string.title_activity_menu);
                         mActionbar.setHomeAsUpIndicator(R.drawable.ic_arrow_back_white);
                     }
 
                     @Override
                     public void onDrawerClosed(View drawerView) {
+                        mActionbar.setTitle(R.string.title_activity_main);
                         mActionbar.setHomeAsUpIndicator(R.drawable.ic_menu_white);
                     }
 
@@ -203,10 +205,8 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
-                    mActionbar.setHomeAsUpIndicator(R.drawable.ic_menu_white);
                     mDrawerLayout.closeDrawer(GravityCompat.START);
                 } else {
-                    mActionbar.setHomeAsUpIndicator(R.drawable.ic_arrow_back_white);
                     mDrawerLayout.openDrawer(GravityCompat.START);
                 }
                 return true;
@@ -340,17 +340,20 @@ public class MainActivity extends AppCompatActivity {
                                     JSONSharedPreferences.remove(mContext, getPackageName(), mApp.getAssignmentsKey());
                                     JSONSharedPreferences.saveJSONArray(mContext, getPackageName(), mApp.getAssignmentsKey(), assignmentArray);
                                     loadAssignmentsToLayout(assignmentArray);
-                                    if (mSwipeRefreshLayout.isRefreshing()) {
-                                        mSwipeRefreshLayout.setRefreshing(false);
-                                    }
                                     Snackbar.make(mCoordinatorLayout, getString(R.string.info_updated), Snackbar.LENGTH_SHORT).show();
                                 } catch (JSONException jex) {
                                     Snackbar.make(mCoordinatorLayout, jex.getLocalizedMessage(), Snackbar.LENGTH_LONG).show();
+                                }
+                                if (mSwipeRefreshLayout.isRefreshing()) {
+                                    mSwipeRefreshLayout.setRefreshing(false);
                                 }
                             }
                         }, new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError vex) {
+                        if (mSwipeRefreshLayout.isRefreshing()) {
+                            mSwipeRefreshLayout.setRefreshing(false);
+                        }
                         if (vex instanceof AuthFailureError) {
                             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                             builder.setTitle(R.string.error_auth_failure_title)
@@ -361,9 +364,13 @@ public class MainActivity extends AppCompatActivity {
                                         public void onClick(DialogInterface dialog, int which) {
                                             // do nothing
                                         }
-                                    }).show();
-                            // revoke all credentials and request login
-                            doPerformLogout();
+                                    }).setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                @Override
+                                public void onDismiss(DialogInterface dialog) {
+                                    // revoke all credentials and request login
+                                    doPerformLogout();
+                                }
+                            }).show();
                         }
                         Snackbar.make(mCoordinatorLayout, vex.getLocalizedMessage(), Snackbar.LENGTH_LONG).show();
                     }
@@ -392,7 +399,9 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onCancelled() {
-            //
+            if (mSwipeRefreshLayout.isRefreshing()) {
+                mSwipeRefreshLayout.setRefreshing(false);
+            }
         }
     }
 
