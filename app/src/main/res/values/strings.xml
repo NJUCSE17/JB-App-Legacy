@@ -13,8 +13,13 @@
     <string name="prompt_password">Password</string>
     <string name="action_sign_in">Sign in to JB App</string>
     <string name="action_sign_in_short">Sign in</string>
-    <string name="error_invalid_student_id">This student ID is invalid</string>
-    <string name="error_invalid_password">This password is too short</string>
-    <string name="error_incorrect_password">This password is incorrect</string>
-    <string name="error_field_required">This field is required</string>
+    <string name="error_invalid_student_id">This student ID is invalid.</string>
+    <string name="error_invalid_password">This password is too short.</string>
+    <string name="error_incorrect_password">This password is incorrect.</string>
+    <string name="error_field_required">This field is required.</string>
+
+    <!-- Main Activity -->
+    <string name="info_no_assignment">There is no assignment to do.</string>
+    <string name="assignment_count_left">&#8212; Found</string>
+    <string name="assignment_count_right">assignments in total &#8212;</string>
 </resources>

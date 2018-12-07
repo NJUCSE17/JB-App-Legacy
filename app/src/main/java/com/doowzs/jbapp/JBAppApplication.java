@@ -7,6 +7,7 @@ public class JBAppApplication extends Application {
     private final String tokenKey =  "com.doowzs.jbapp.token";
     private final String idKey =  "com.doowzs.jbapp.user_id";
     private final String nameKey =  "com.doowzs.jbapp.user_name";
+    private final String assignmentsKey =  "com.doowzs.jbapp.assignments";
     private final String rootURL = "http://192.168.1.140:8000/api/";
 
     /**
@@ -39,6 +40,14 @@ public class JBAppApplication extends Application {
      */
     public String getNameKey() {
         return nameKey;
+    }
+
+    /**
+     * Get the key to assignments in shared prefs.
+     * @return key to assignments
+     */
+    public String getAssignmentsKey() {
+        return assignmentsKey;
     }
 
     /**

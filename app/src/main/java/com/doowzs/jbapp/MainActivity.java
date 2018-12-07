@@ -1,9 +1,11 @@
 package com.doowzs.jbapp;
+import com.doowzs.jbapp.utils.JSONSharedPreferences;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.Context;
 import android.content.Intent;
@@ -11,7 +13,10 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
@@ -34,6 +39,7 @@ import com.google.android.material.snackbar.Snackbar;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.lang.reflect.Array;
 import java.util.HashMap;
@@ -46,9 +52,11 @@ public class MainActivity extends AppCompatActivity {
     private Context mContext = null;
 
     // Layout Components
+    private DisplayMetrics mDisplayMetrics = null;
     private DrawerLayout mDrawerLayout = null;
     private CoordinatorLayout mCoordinatorLayout = null;
     private LinearLayout mLinearLayout = null;
+    private SwipeRefreshLayout mSwipeRefreshLayout = null;
 
     // Volley Request Queue
     private RequestQueue mQueue = null;
@@ -68,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
         mContext = this.getBaseContext();
         mQueue = Volley.newRequestQueue(mContext);
 
+        mDisplayMetrics = mContext.getResources().getDisplayMetrics();
         mDrawerLayout = findViewById(R.id.drawer_layout);
         mCoordinatorLayout = findViewById(R.id.main_coordinator_layout);
         mLinearLayout = findViewById(R.id.assignment_layout);
@@ -91,6 +100,24 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
 
+        mSwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
+        mSwipeRefreshLayout.setOnRefreshListener(
+                new SwipeRefreshLayout.OnRefreshListener() {
+                    @Override
+                    public void onRefresh() {
+                        mGetAssignmentsTask = new GetAssignmentsTask();
+                        mGetAssignmentsTask.execute();
+                    }
+                }
+        );
+
+        try {
+            JSONArray assignmentsArray = JSONSharedPreferences.loadJSONArray(mContext, getPackageName(), mApp.getAssignmentsKey());
+            loadAssignmentsToLayout(assignmentsArray);
+        } catch (JSONException jex) {
+            Toast.makeText(this, jex.toString(), Toast.LENGTH_LONG).show();
+        }
+
         mGetAssignmentsTask = new GetAssignmentsTask();
         mGetAssignmentsTask.execute();
     }
@@ -111,6 +138,68 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Load assignments from an array to linear layout.
+     * @param assignmentArray a JSON array of assignments
+     */
+    public void loadAssignmentsToLayout(JSONArray assignmentArray) {
+        int dp5 = dp2pixelInt(5), dp8 = dp2pixelInt(8);
+        mLinearLayout.removeAllViews();
+        if(assignmentArray.length() == 0) {
+            mLinearLayout.setGravity(Gravity.CENTER_VERTICAL);
+            TextView textView = new TextView(mContext);
+            textView.setTextColor(getColor(R.color.colorBlack));
+            textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+            textView.setText(getString(R.string.info_no_assignment));
+            mLinearLayout.addView(textView);
+        } else {
+            mLinearLayout.setGravity(Gravity.NO_GRAVITY);
+            try {
+                for (int i = 0; i < assignmentArray.length(); ++i) {
+                    JSONObject assignmentObject = assignmentArray.getJSONObject(i);
+                    CardView cardView = new CardView(mContext);
+                    cardView.setClickable(true);
+                    cardView.setUseCompatPadding(true);
+                    cardView.setRadius(dp8);
+                    cardView.setContentPadding(dp8, dp8, dp8, dp8);
+                    cardView.setCardElevation(dp5);
+
+                    RelativeLayout relativeLayout = new RelativeLayout(mContext);
+                    LinearLayout linearLayout = new LinearLayout(mContext);
+                    linearLayout.setOrientation(LinearLayout.VERTICAL);
+                    linearLayout.setPadding(15, 10, 15, 10);
+
+                    TextView textView = new TextView(mContext);
+                    textView.setText(assignmentObject.getString("name"));
+                    textView.setTextSize(16);
+                    textView.setTextColor(getColor(R.color.colorBlack));
+
+                    WebView webView = new WebView(mContext);
+                    webView.loadData(assignmentObject.getString("content"), "text/html; charset=UTF-8", null);
+
+                    TextView textView2 = new TextView(mContext);
+                    textView2.setText(assignmentObject.getString("due_time"));
+                    textView2.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
+
+                    linearLayout.addView(textView);
+                    linearLayout.addView(webView);
+                    linearLayout.addView(textView2);
+                    relativeLayout.addView(linearLayout);
+                    cardView.addView(relativeLayout);
+                    mLinearLayout.addView(cardView);
+                }
+                TextView textView = new TextView(mContext);
+                String assignmentCountStr = getString(R.string.assignment_count_left) + " "
+                        + assignmentArray.length() + " " + getString(R.string.assignment_count_right);
+                textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                textView.setText(assignmentCountStr);
+                textView.setPadding(dp8, dp8 * 2, dp8, dp8 * 2);
+                mLinearLayout.addView(textView);
+            } catch (JSONException jex) {
+                Toast.makeText(this, jex.toString(), Toast.LENGTH_LONG).show();
+            }
+        }
+    }
 
     /**
      * Represents an asynchronous task to fetch assignmens.
@@ -126,24 +215,11 @@ public class MainActivity extends AppCompatActivity {
                             public void onResponse(JSONObject data) {
                                 try {
                                     JSONArray assignmentArray = data.getJSONArray("data");
-                                    for (int i = 0; i < assignmentArray.length(); ++i) {
-                                        JSONObject assignmentObject = assignmentArray.getJSONObject(i);
-                                        CardView cardView = new CardView(mContext);
-                                        RelativeLayout relativeLayout = new RelativeLayout(mContext);
-                                        LinearLayout linearLayout = new LinearLayout(mContext);
-                                        linearLayout.setOrientation(LinearLayout.VERTICAL);
-                                        linearLayout.setPadding(15, 10, 15, 10);
-                                        WebView webView = new WebView(mContext);
-                                        webView.loadData(assignmentObject.getString("content"), "text/html; charset=UTF-8", null);
-                                        TextView textView = new TextView(mContext);
-                                        textView.setText(assignmentObject.getString("due_time"));
-                                        textView.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
-
-                                        linearLayout.addView(webView);
-                                        linearLayout.addView(textView);
-                                        relativeLayout.addView(linearLayout);
-                                        cardView.addView(relativeLayout);
-                                        mLinearLayout.addView(cardView);
+                                    JSONSharedPreferences.remove(mContext, getPackageName(), mApp.getAssignmentsKey());
+                                    JSONSharedPreferences.saveJSONArray(mContext, getPackageName(), mApp.getAssignmentsKey(), assignmentArray);
+                                    loadAssignmentsToLayout(assignmentArray);
+                                    if (mSwipeRefreshLayout.isRefreshing()) {
+                                        mSwipeRefreshLayout.setRefreshing(false);
                                     }
                                 } catch (JSONException jex) {
                                     Snackbar.make(mCoordinatorLayout, jex.toString(), Snackbar.LENGTH_LONG).show();
@@ -181,5 +257,23 @@ public class MainActivity extends AppCompatActivity {
         protected void onCancelled() {
             //
         }
+    }
+
+    /**
+     * Convert dp to pixel
+     * @param dp int
+     * @return the pixel value
+     */
+    public float dp2pixel(int dp) {
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, mDisplayMetrics);
+    }
+
+    /**
+     * Convert dp to pixel (integer)
+     * @param dp int
+     * @return the pixel value (integer)
+     */
+    public int dp2pixelInt(int dp) {
+        return Math.round(dp2pixel(dp));
     }
 }
