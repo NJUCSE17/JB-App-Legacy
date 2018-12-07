@@ -2,8 +2,12 @@
     <string name="app_name">JB App</string>
     <string name="app_author">by doowzs (2018)</string>
     <string name="app_repo">https://github.com/doowzs/JB-App</string>
-    <string name="title_activity_main">JB App</string>
     <string name="action_settings">Settings</string>
+
+    <!-- Activity Titles -->
+    <string name="title_activity_main">Assignments</string>
+    <string name="title_activity_login">Sign in</string>
+    <string name="title_activity_about">About</string>
 
     <!-- Navigation Bar -->
     <string name="nav_home">Home</string>
@@ -19,7 +23,6 @@
     <string name="version">Version</string>
 
     <!-- Strings related to login -->
-    <string name="title_activity_login">Sign in</string>
     <string name="prompt_student_id">Student ID</string>
     <string name="prompt_password">Password</string>
     <string name="action_sign_in">Sign in to JB App</string>
@@ -37,12 +40,12 @@
     <string name="confirm_logout_title">Logout confirm</string>
     <string name="confirm_logout_content">
         Are you sure you want to logout from JB App?
-        \nCurrent logged in credential: \n
+        \n\nCurrent logged in credential: \n
     </string>
 
     <!-- Change Log -->
     <string name="string_changelog">
-        v0.0.0 2018-12-07
-        \n&#8212; Can sign in/out and fetch assignments.
+        v0.0 2018-12-07
+        \n- Can sign in/out and fetch assignments.
     </string>
 </resources>

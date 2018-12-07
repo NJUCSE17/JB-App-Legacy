@@ -1,10 +1,13 @@
 package com.doowzs.jbapp;
 import com.doowzs.jbapp.utils.JSONSharedPreferences;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -13,14 +16,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
@@ -34,7 +34,6 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.material.navigation.NavigationView;
@@ -45,7 +44,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.Text;
 
-import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -56,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
     private Context mContext = null;
 
     // Layout Components
+    private ActionBar mActionbar = null;
     private DisplayMetrics mDisplayMetrics = null;
     private DrawerLayout mDrawerLayout = null;
     private CoordinatorLayout mCoordinatorLayout = null;
@@ -69,10 +68,18 @@ public class MainActivity extends AppCompatActivity {
     // Constants
     private final int REQUEST_LOGIN = 1;
 
+    /**
+     * Create the activity
+     * @param savedInstanceState (not used)
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mActionbar = getSupportActionBar();
+        mActionbar.setDisplayHomeAsUpEnabled(true);
+        mActionbar.setHomeAsUpIndicator(R.drawable.ic_menu_white);
 
         // Check Login Status
         mApp = ((JBAppApplication) getApplication());
@@ -80,11 +87,38 @@ public class MainActivity extends AppCompatActivity {
         mContext = this.getBaseContext();
         mQueue = Volley.newRequestQueue(mContext);
 
+        // Fetch layout components
         mDisplayMetrics = mContext.getResources().getDisplayMetrics();
         mDrawerLayout = findViewById(R.id.drawer_layout);
         mCoordinatorLayout = findViewById(R.id.main_coordinator_layout);
         mLinearLayout = findViewById(R.id.assignment_layout);
 
+        // Listen to drawer events
+        mDrawerLayout.addDrawerListener(
+                new DrawerLayout.DrawerListener() {
+                    @Override
+                    public void onDrawerSlide(View drawerView, float slideOffset) {
+                        //
+                    }
+
+                    @Override
+                    public void onDrawerOpened(View drawerView) {
+                        mActionbar.setHomeAsUpIndicator(R.drawable.ic_arrow_back_white);
+                    }
+
+                    @Override
+                    public void onDrawerClosed(View drawerView) {
+                        mActionbar.setHomeAsUpIndicator(R.drawable.ic_menu_white);
+                    }
+
+                    @Override
+                    public void onDrawerStateChanged(int newState) {
+                        //
+                    }
+                }
+        );
+
+        // Set up navigation
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.getMenu().getItem(0).setChecked(true);
         navigationView.setNavigationItemSelectedListener(
@@ -102,6 +136,14 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
 
+        // Update Navigation header with user info
+        LinearLayout headerView = (LinearLayout) navigationView.getHeaderView(0);
+        TextView navHeaderText1 = (TextView) headerView.getChildAt(0);
+        navHeaderText1.setText(mPrefs.getString(mApp.getNameKey(), "Anonymous"));
+        TextView navHeaderText2 = (TextView) headerView.getChildAt(1);
+        navHeaderText2.setText(mPrefs.getString(mApp.getIdKey(), "404"));
+
+        // Set up swipe fresh layout
         mSwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
         mSwipeRefreshLayout.setOnRefreshListener(
                 new SwipeRefreshLayout.OnRefreshListener() {
@@ -113,6 +155,7 @@ public class MainActivity extends AppCompatActivity {
                 }
         );
 
+        // Load saved assignments
         try {
             JSONArray assignmentsArray = JSONSharedPreferences.loadJSONArray(mContext, getPackageName(), mApp.getAssignmentsKey());
             loadAssignmentsToLayout(assignmentsArray);
@@ -120,10 +163,17 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, jex.toString(), Toast.LENGTH_LONG).show();
         }
 
+        // Fetch latest assignments
         mGetAssignmentsTask = new GetAssignmentsTask();
         mGetAssignmentsTask.execute();
     }
 
+    /**
+     * Deals with result from intents
+     * @param requestCode the request code of intent
+     * @param resultCode the result from intent
+     * @param data intent itself
+     */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         try {
@@ -141,13 +191,34 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Action Bar menu handler
+     * @param item menu of action bar
+     * @return boolean
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    mActionbar.setHomeAsUpIndicator(R.drawable.ic_menu_white);
+                    mDrawerLayout.closeDrawer(GravityCompat.START);
+                } else {
+                    mActionbar.setHomeAsUpIndicator(R.drawable.ic_arrow_back_white);
+                    mDrawerLayout.openDrawer(GravityCompat.START);
+                }
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    /**
      * Logout from app.
      */
     public void performLogout() {
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         builder.setTitle(getString(R.string.confirm_logout_title))
                 .setMessage(getString(R.string.confirm_logout_content)
-                        + mPrefs.getString(mApp.getIdKey(), "404") + " &#8212; "
+                        + mPrefs.getString(mApp.getIdKey(), "404") + " - "
                         + mPrefs.getString(mApp.getNameKey(), "Anonymous"))
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
