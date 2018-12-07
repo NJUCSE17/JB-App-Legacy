@@ -245,6 +245,7 @@ public class MainActivity extends AppCompatActivity {
                 .remove(mApp.getIdKey())
                 .remove(mApp.getNameKey())
                 .apply();
+        JSONSharedPreferences.remove(mContext, getPackageName(), mApp.getAssignmentsKey());
         Intent loginIntent = new Intent(MainActivity.this, LoginActivity.class);
         startActivityForResult(loginIntent, REQUEST_LOGIN);
     }
