@@ -1,6 +1,7 @@
 package com.doowzs.jbapp;
 import com.doowzs.jbapp.utils.JSONSharedPreferences;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
@@ -8,15 +9,18 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
@@ -86,15 +90,9 @@ public class MainActivity extends AppCompatActivity {
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
-                        menuItem.setChecked(true);
                         mDrawerLayout.closeDrawers();
                         if (menuItem.getItemId() == R.id.nav_logout) {
-                            mPrefs.edit().remove(mApp.getTokenKey())
-                                    .remove(mApp.getIdKey())
-                                    .remove(mApp.getNameKey())
-                                    .apply();
-                            Intent loginIntent = new Intent(MainActivity.this, LoginActivity.class);
-                            startActivityForResult(loginIntent, REQUEST_LOGIN);
+                            performLogout();
                         }
                         return true;
                     }
@@ -136,6 +134,32 @@ public class MainActivity extends AppCompatActivity {
             this.setResult(RESULT_CANCELED);
             finish();
         }
+    }
+
+    /**
+     * Logout from app.
+     */
+    public void performLogout() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setTitle(getString(R.string.confirm_logout_title))
+                .setMessage(getString(R.string.confirm_logout_content))
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        mPrefs.edit().remove(mApp.getTokenKey())
+                                .remove(mApp.getIdKey())
+                                .remove(mApp.getNameKey())
+                                .apply();
+                        Intent loginIntent = new Intent(MainActivity.this, LoginActivity.class);
+                        startActivityForResult(loginIntent, REQUEST_LOGIN);
+                    }
+                })
+                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
     }
 
     /**
