@@ -86,12 +86,16 @@ public class MainActivity extends AppCompatActivity {
         mLinearLayout = findViewById(R.id.assignment_layout);
 
         NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.getMenu().getItem(0).setChecked(true);
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
                         mDrawerLayout.closeDrawers();
-                        if (menuItem.getItemId() == R.id.nav_logout) {
+                        if (menuItem.getItemId() == R.id.nav_about) {
+                            Intent aboutIntent = new Intent(MainActivity.this, AboutActivity.class);
+                            startActivity(aboutIntent);
+                        } else if (menuItem.getItemId() == R.id.nav_logout) {
                             performLogout();
                         }
                         return true;
@@ -158,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
                         // do nothing
                     }
                 })
-                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setIcon(getDrawable(R.drawable.ic_exclamation_circle))
                 .show();
     }
 

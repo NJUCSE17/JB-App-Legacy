@@ -9,7 +9,8 @@ android {
     if (!versionPropsFile.exists()) {
         versionProps['VERSION_PATCH'] = "0"
         versionProps['VERSION_NUMBER'] = "0"
-        versionProps['VERSION_BUILD'] = "-1" // I set it to minus one so the first build is 0 which isn't super important.
+        versionProps['VERSION_BUILD'] = "-1"
+        // I set it to minus one so the first build is 0 which isn't super important.
         versionProps.store(versionPropsFile.newWriter(), null)
     }
 

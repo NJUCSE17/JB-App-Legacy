@@ -14,25 +14,28 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".WelcomeActivity"
+        <activity
+            android:name=".WelcomeActivity"
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".MainActivity"
             android:label="@string/title_activity_main"
-            android:theme="@style/AppTheme">
-        </activity>
+            android:theme="@style/AppTheme"></activity>
         <activity
             android:name=".LoginActivity"
             android:label="@string/title_activity_login"
             android:theme="@style/AppTheme"
-            android:windowSoftInputMode="stateVisible|adjustResize">
-        </activity>
+            android:windowSoftInputMode="stateVisible|adjustResize"></activity>
+        <activity android:name=".AboutActivity"
+            android:label="@string/nav_about"
+            android:theme="@style/AppTheme"></activity>
     </application>
 
 </manifest>

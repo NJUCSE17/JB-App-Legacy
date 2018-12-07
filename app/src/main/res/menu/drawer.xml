@@ -2,8 +2,16 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
     <group android:checkableBehavior="single">
         <item
+            android:id="@+id/nav_home"
+            android:icon="@drawable/ic_home"
+            android:title="@string/nav_home" />
+        <item
+            android:id="@+id/nav_about"
+            android:icon="@drawable/ic_info_circle"
+            android:title="@string/nav_about" />
+        <item
             android:id="@+id/nav_logout"
-            android:icon="@drawable/ic_drawer"
-            android:title="Logout" />
+            android:icon="@drawable/ic_sign_out_alt"
+            android:title="@string/nav_logout" />
     </group>
 </menu>
