@@ -1,7 +1,7 @@
 <resources>
-    <string name="app_name">JB App</string>
-    <string name="app_author">by doowzs (2018)</string>
-    <string name="app_repo">https://github.com/doowzs/JB-App</string>
+    <string name="app_name" translatable="false">JB App</string>
+    <string name="app_author" translatable="false">by doowzs (2018)</string>
+    <string name="app_repo" translatable="false">https://github.com/doowzs/JB-App</string>
     <string name="action_settings">Settings</string>
 
     <!-- Activity Titles -->
@@ -16,7 +16,7 @@
 
     <!-- Button Labels -->
     <string name="btn_changelog">Change Log</string>
-    <string name="btn_rtfsc">RTFSC</string>
+    <string name="btn_rtfsc" translatable="false">RTFSC</string>
 
     <!-- Welcome Screen -->
     <string name="welcome_back">Welcome back,</string>
@@ -25,7 +25,7 @@
     <!-- Strings related to login -->
     <string name="prompt_student_id">Student ID</string>
     <string name="prompt_password">Password</string>
-    <string name="action_sign_in">Sign in to JB App</string>
+    <string name="action_sign_in">Sign in to JB Online</string>
     <string name="action_sign_in_short">Sign in</string>
     <string name="error_invalid_student_id">This student ID is invalid.</string>
     <string name="error_invalid_password">This password is too short.</string>
@@ -38,13 +38,10 @@
     <string name="assignment_count_left">&#8212; Found</string>
     <string name="assignment_count_right">assignments in total &#8212;</string>
     <string name="confirm_logout_title">Logout confirm</string>
-    <string name="confirm_logout_content">
-        Are you sure you want to logout from JB App?
-        \n\nCurrent logged in credential: \n
-    </string>
+    <string name="confirm_logout_content">"Are you sure you want to logout from JB App?\n        \n\nCurrent logged in credential: \n\n    "</string>
 
     <!-- Change Log -->
-    <string name="string_changelog">
+    <string name="string_changelog" translatable="false">
         v0.0 2018-12-07
         \n- Can sign in/out and fetch assignments.
     </string>

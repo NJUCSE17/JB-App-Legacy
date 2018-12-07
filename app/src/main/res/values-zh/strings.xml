@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_settings">设置</string>
+    <string name="nav_home">主页</string>
+    <string name="nav_about">关于</string>
+    <string name="nav_logout">退出</string>
+    <string name="btn_changelog">更新历史</string>
+    <string name="welcome_back">欢迎回来，</string>
+    <string name="version">版本</string>
+    <string name="prompt_student_id">学号</string>
+    <string name="prompt_password">密码</string>
+    <string name="action_sign_in">登陆到JB Online</string>
+    <string name="action_sign_in_short">登陆</string>
+    <string name="error_invalid_student_id">学号不符合基本法。</string>
+    <string name="error_invalid_password">密码忒短了。</string>
+    <string name="error_incorrect_password">密码不对。</string>
+    <string name="error_field_required">此表单不能为空。</string>
+    <string name="info_updated">当前作业已更新。</string>
+    <string name="info_no_assignment">现在没作业可做。</string>
+    <string name="assignment_count_left">&#8212; 共有</string>
+    <string name="assignment_count_right">个作业 &#8212;</string>
+    <string name="confirm_logout_title">确认退出</string>
+    <string name="confirm_logout_content">你确定要退出JB Online账户吗？\n\n当前已登录的账户为：\n</string>
+    <string name="title_activity_main">当前作业</string>
+    <string name="title_activity_login">登陆</string>
+    <string name="title_activity_about">关于</string>
+</resources>
