@@ -42,7 +42,7 @@
                 android:fontFamily="casual"
                 android:text="Powered by JB Online"
                 android:textAlignment="center"
-                android:textSize="18sp" />
+                android:textSize="24sp" />
 
             <TextView
                 android:id="@+id/textView_version"
@@ -53,7 +53,7 @@
                 android:fontFamily="casual"
                 android:text="vx.y.z Build: ttt"
                 android:textAlignment="center"
-                android:textSize="14sp" />
+                android:textSize="18sp" />
         </LinearLayout>
 
     </com.google.android.material.circularreveal.coordinatorlayout.CircularRevealCoordinatorLayout>
