@@ -146,7 +146,9 @@ public class MainActivity extends AppCompatActivity {
     public void performLogout() {
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         builder.setTitle(getString(R.string.confirm_logout_title))
-                .setMessage(getString(R.string.confirm_logout_content))
+                .setMessage(getString(R.string.confirm_logout_content)
+                        + mPrefs.getString(mApp.getIdKey(), "404") + " &#8212; "
+                        + mPrefs.getString(mApp.getNameKey(), "Anonymous"))
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         mPrefs.edit().remove(mApp.getTokenKey())

@@ -35,11 +35,14 @@
     <string name="assignment_count_left">&#8212; Found</string>
     <string name="assignment_count_right">assignments in total &#8212;</string>
     <string name="confirm_logout_title">Logout confirm</string>
-    <string name="confirm_logout_content">Are you sure you want to logout from JB App?</string>
+    <string name="confirm_logout_content">
+        Are you sure you want to logout from JB App?
+        \nCurrent logged in credential: \n
+    </string>
 
     <!-- Change Log -->
     <string name="string_changelog">
-        v0.0.0 2018-12-07 \n
-        - Can sign in/out and fetch assignments.
+        v0.0.0 2018-12-07
+        \n&#8212; Can sign in/out and fetch assignments.
     </string>
 </resources>
