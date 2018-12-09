@@ -1,7 +1,6 @@
 <resources>
     <string name="app_name" translatable="false">JB App</string>
     <string name="app_author" translatable="false">by doowzs (2018)</string>
-    <string name="app_repo" translatable="false">https://github.com/doowzs/JB-App</string>
     <string name="action_settings">Settings</string>
 
     <!-- Activity Titles -->
@@ -16,12 +15,20 @@
     <string name="nav_logout">Logout</string>
 
     <!-- Button Labels -->
+    <string name="btn_update">Check Update</string>
     <string name="btn_changelog">Change Log</string>
     <string name="btn_rtfsc" translatable="false">RTFSC</string>
 
     <!-- Welcome Screen -->
     <string name="welcome_back">Welcome back,</string>
     <string name="version">Version</string>
+
+    <!-- Strings related to update -->
+    <string name="update_title">Update available</string>
+    <string name="update_contents">Version info:\n</string>
+    <string name="update_current_version">Current Version:</string>
+    <string name="update_latest_version">Latest Version:</string>
+    <string name="update_confirm">Do you want to update now?</string>
 
     <!-- Strings related to login -->
     <string name="prompt_student_id">Student ID</string>
@@ -35,6 +42,14 @@
     <string name="error_auth_failure_title">Auth Failure</string>
     <string name="error_auth_failure_content">Credential is not correct or token has expired. You need to login again.</string>
 
+    <!-- Strings related to assignments -->
+    <string name="assignment_mark_finished_title">Finished?</string>
+    <string name="assignment_mark_finished_content">Are you sure you want to mark the folloing assignment as finished?</string>
+    <string name="assignment_mark_unfinished_title">Not finished?</string>
+    <string name="assignment_mark_unfinished_content">Are you sure you want to mark the folloing assignment as unfinished?</string>
+    <string name="assignment_mark_progressing_left">Updating the status of assignment</string>
+    <string name="assignment_mark_progressing_right">&#8230;</string>
+
     <!-- Main Activity -->
     <string name="info_updated">Assignments updated.</string>
     <string name="info_no_assignment">There is no assignment to do.</string>
@@ -45,7 +60,15 @@
 
     <!-- Change Log -->
     <string name="string_changelog" translatable="false">
+        v0.1 2018-12-09
+        \n - Mark assignment as finished/unfinished
+        \n - Check update of app using API
+        \n - Code rebase and UX update
+
         v0.0 2018-12-07
-        \n- Can sign in/out and fetch assignments.
+        \n - Sign in/out using JB Online\'s APIs
+        \n - Fetch ongoing assignments and list in CardViews
+        \n - Pretty time for formatted DDL display (may need further dev)
+        \n - Error detection and handle for bad auth credentials
     </string>
 </resources>

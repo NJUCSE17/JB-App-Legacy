@@ -1,32 +1,48 @@
 package com.doowzs.jbapp;
 
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.Volley;
+import com.r0adkll.slidr.Slidr;
 
 public class AboutActivity extends AppCompatActivity {
+    // Application Helper
+    private JBAppApplication mApp = null;
+
+    // Layout Component
+    private AlertDialog.Builder mBuilder = null;
+
+    // Volley Request Queue
+    private RequestQueue mQueue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
+        Slidr.attach(this);
+
+        mApp = (JBAppApplication) getApplication();
+        mBuilder = new AlertDialog.Builder(AboutActivity.this);
+        mQueue = Volley.newRequestQueue(AboutActivity.this);
 
         try {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         } catch (Exception ex) {
-            Toast.makeText(this, ex.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+            Log.e("AboutPageSetup", ex.getLocalizedMessage());
         }
 
         TextView versionTextView = findViewById(R.id.versionTextView);
-        versionTextView.setText(BuildConfig.VERSION_NAME);
+        versionTextView.setText(mApp.versionName);
 
         Button clButton = findViewById(R.id.changeLogButton);
         clButton.setOnClickListener(new View.OnClickListener() {
@@ -43,8 +59,15 @@ public class AboutActivity extends AppCompatActivity {
         scButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent rtfsc = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.app_repo)));
-                startActivity(rtfsc);
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(mApp.repoURL)));
+            }
+        });
+
+        Button upButton = findViewById(R.id.updateButton);
+        upButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mQueue.add(mApp.checkUpdateRequest(mBuilder));
             }
         });
     }

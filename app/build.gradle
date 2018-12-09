@@ -7,7 +7,7 @@ android {
     def value = 0
     Properties versionProps = new Properties()
     if (!versionPropsFile.exists()) {
-        versionProps['VERSION_PATCH'] = "0"
+        versionProps['VERSION_PATCH'] = "-1"
         versionProps['VERSION_NUMBER'] = "0"
         versionProps['VERSION_BUILD'] = "-1"
         // I set it to minus one so the first build is 0 which isn't super important.
@@ -15,7 +15,7 @@ android {
     }
 
     def runTasks = gradle.startParameter.taskNames
-    if ('assembleRelease' in runTasks) {
+    if (':app:assembleRelease' in runTasks) {
         value = 1
     }
 
@@ -31,8 +31,8 @@ android {
 
         versionProps.store(versionPropsFile.newWriter(), null)
 
-        mVersionName = "v0.0.${versionProps['VERSION_PATCH']}"
-        mFileName = "JBApp-${mVersionName}.apk"
+        mVersionName = "v0.1.${versionProps['VERSION_PATCH']}"
+        mFileName = "JBApp-${mVersionName}-${versionProps['VERSION_NUMBER']}.apk"
 
         defaultConfig {
             minSdkVersion 23
@@ -68,6 +68,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.0.0-alpha1'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.2'
     implementation 'org.ocpsoft.prettytime:prettytime:4.0.2.Final'
+    implementation 'com.r0adkll:slidableactivity:2.0.6'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'

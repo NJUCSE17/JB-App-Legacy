@@ -1,28 +1,21 @@
 package com.doowzs.jbapp;
-import com.doowzs.jbapp.utils.JSONSharedPreferences;
-
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -33,22 +26,31 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.doowzs.jbapp.utils.JSONSharedPreferences;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.ocpsoft.prettytime.Duration;
 import org.ocpsoft.prettytime.PrettyTime;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
-import java.util.Map;
+
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 public class MainActivity extends AppCompatActivity {
     // Application and Shared Preferences
@@ -63,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
     private CoordinatorLayout mCoordinatorLayout = null;
     private LinearLayout mLinearLayout = null;
     private SwipeRefreshLayout mSwipeRefreshLayout = null;
+    private AlertDialog.Builder mBuilder = null;
 
     // Volley Request Queue
     private RequestQueue mQueue = null;
@@ -92,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
         mDrawerLayout = findViewById(R.id.drawer_layout);
         mCoordinatorLayout = findViewById(R.id.main_coordinator_layout);
         mLinearLayout = findViewById(R.id.assignment_layout);
+        mBuilder = new AlertDialog.Builder(MainActivity.this);
 
         // Listen to drawer events
         mDrawerLayout.addDrawerListener(
@@ -141,9 +145,9 @@ public class MainActivity extends AppCompatActivity {
         // Update Navigation header with user info
         LinearLayout headerView = (LinearLayout) navigationView.getHeaderView(0);
         TextView navHeaderText1 = (TextView) headerView.getChildAt(0);
-        navHeaderText1.setText(mPrefs.getString(mApp.getNameKey(), "Anonymous"));
+        navHeaderText1.setText(mPrefs.getString(mApp.nameKey, "Anonymous"));
         TextView navHeaderText2 = (TextView) headerView.getChildAt(1);
-        navHeaderText2.setText(mPrefs.getString(mApp.getIdKey(), "404"));
+        navHeaderText2.setText(mPrefs.getString(mApp.idKey, "404"));
 
         // Set up swipe fresh layout
         mSwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
@@ -159,11 +163,14 @@ public class MainActivity extends AppCompatActivity {
 
         // Load saved assignments
         try {
-            JSONArray assignmentsArray = JSONSharedPreferences.loadJSONArray(mContext, getPackageName(), mApp.getAssignmentsKey());
+            JSONArray assignmentsArray = JSONSharedPreferences.loadJSONArray(mContext, getPackageName(), mApp.assignmentsKey);
             loadAssignmentsToLayout(assignmentsArray);
         } catch (JSONException jex) {
             Toast.makeText(this, jex.getLocalizedMessage(), Toast.LENGTH_LONG).show();
         }
+
+        // Check app update
+        mQueue.add(mApp.checkUpdateRequest(mBuilder));
 
         // Fetch latest assignments
         mGetAssignmentsTask = new GetAssignmentsTask();
@@ -196,8 +203,8 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         builder.setTitle(getString(R.string.confirm_logout_title))
                 .setMessage(getString(R.string.confirm_logout_content)
-                        + mPrefs.getString(mApp.getIdKey(), "404") + " - "
-                        + mPrefs.getString(mApp.getNameKey(), "Anonymous"))
+                        + mPrefs.getString(mApp.idKey, "404") + " - "
+                        + mPrefs.getString(mApp.nameKey, "Anonymous"))
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         doPerformLogout();
@@ -216,108 +223,57 @@ public class MainActivity extends AppCompatActivity {
      * Handler of true logout event
      */
     private void doPerformLogout() {
-        mPrefs.edit().remove(mApp.getTokenKey())
-                .remove(mApp.getIdKey())
-                .remove(mApp.getNameKey())
+        mPrefs.edit().remove(mApp.tokenKey)
+                .remove(mApp.idKey)
+                .remove(mApp.nameKey)
                 .apply();
-        JSONSharedPreferences.remove(mContext, getPackageName(), mApp.getAssignmentsKey());
+        JSONSharedPreferences.remove(mContext, getPackageName(), mApp.assignmentsKey);
         Intent loginIntent = new Intent(MainActivity.this, LoginActivity.class);
         startActivity(loginIntent);
         finish(); // destroy MainActivity
     }
 
     /**
-     * Load assignments from an array to linear layout.
-     * @param assignmentArray a JSON array of assignments
+     * Convert dp to pixel
+     * @param dp int
+     * @return the pixel value
      */
-    public void loadAssignmentsToLayout(JSONArray assignmentArray) {
-        int dp5 = dp2pixelInt(5), dp8 = dp2pixelInt(8);
-        mLinearLayout.removeAllViews();
-        if(assignmentArray.length() == 0) {
-            mLinearLayout.setGravity(Gravity.CENTER_VERTICAL);
-            TextView textView = new TextView(mContext);
-            textView.setTextColor(getColor(R.color.colorBlack));
-            textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-            textView.setText(getString(R.string.info_no_assignment));
-            mLinearLayout.addView(textView);
-        } else {
-            PrettyTime prettyTime = new PrettyTime();
-            DateFormat oldDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()),
-                newDateFormat = new SimpleDateFormat("yyyy-MM-dd (E) HH:mm:ss", Locale.getDefault());
-            mLinearLayout.setGravity(Gravity.NO_GRAVITY);
-            try {
-                for (int i = 0; i < assignmentArray.length(); ++i) {
-                    JSONObject assignmentObject = assignmentArray.getJSONObject(i);
-                    CardView cardView = new CardView(mContext);
-                    cardView.setClickable(true);
-                    cardView.setUseCompatPadding(true);
-                    cardView.setRadius(dp8);
-                    cardView.setContentPadding(dp8, dp8, dp8, dp8);
-                    cardView.setCardElevation(dp5);
+    public float dp2pixel(int dp) {
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, mDisplayMetrics);
+    }
 
-                    RelativeLayout relativeLayout = new RelativeLayout(mContext);
-                    LinearLayout linearLayout = new LinearLayout(mContext);
-                    linearLayout.setOrientation(LinearLayout.VERTICAL);
-                    linearLayout.setPadding(15, 10, 15, 10);
-
-                    TextView textView = new TextView(mContext);
-                    textView.setText(assignmentObject.getString("name"));
-                    textView.setTextSize(16);
-                    textView.setTextColor(getColor(R.color.colorBlack));
-
-                    WebView webView = new WebView(mContext);
-                    webView.loadData(assignmentObject.getString("content"), "text/html; charset=UTF-8", null);
-
-                    String oldDDLStr = null, newDDLStr = null;
-                    try {
-                        oldDDLStr = assignmentObject.getString("due_time");
-                        Date ddlDate = oldDateFormat.parse(oldDDLStr);
-                        newDDLStr = newDateFormat.format(ddlDate) + "\n" + prettyTime.format(ddlDate);
-                    } catch (java.text.ParseException jtpex) {
-                        Toast.makeText(this, jtpex.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-                    }
-                    TextView textView2 = new TextView(mContext);
-                    textView2.setText(newDDLStr);
-                    textView2.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
-
-                    linearLayout.addView(textView);
-                    linearLayout.addView(webView);
-                    linearLayout.addView(textView2);
-                    relativeLayout.addView(linearLayout);
-                    cardView.addView(relativeLayout);
-                    mLinearLayout.addView(cardView);
-                }
-                TextView textView = new TextView(mContext);
-                String assignmentCountStr = getString(R.string.assignment_count_left) + " "
-                        + assignmentArray.length() + " " + getString(R.string.assignment_count_right);
-                textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-                textView.setText(assignmentCountStr);
-                textView.setPadding(dp8, dp8 * 2, dp8, dp8 * 2);
-                mLinearLayout.addView(textView);
-            } catch (JSONException jex) {
-                Toast.makeText(this, jex.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-            }
-        }
+    /**
+     * Convert dp to pixel (integer)
+     * @param dp int
+     * @return the pixel value (integer)
+     */
+    public int dp2pixelInt(int dp) {
+        return Math.round(dp2pixel(dp));
     }
 
     /**
      * Represents an asynchronous task to fetch assignmens.
      */
     public class GetAssignmentsTask extends AsyncTask<Void, Void, Boolean> {
+        GetAssignmentsTask() {
+            if (!mSwipeRefreshLayout.isRefreshing()) {
+                mSwipeRefreshLayout.setRefreshing(true);
+            }
+        }
+
         @Override
         protected Boolean doInBackground(Void... params) {
             try {
-                JsonObjectRequest getAssignmentsRequest = new JsonObjectRequest(
-                        Request.Method.POST, mApp.getAssignmentsURL(), null,
+                mQueue.add(mApp.new AppJsonObjectRequest(
+                        Request.Method.POST, mApp.assignmentsURL, null,
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject data) {
                                 try {
                                     JSONArray assignmentArray = data.getJSONArray("data");
-                                    JSONSharedPreferences.remove(mContext, getPackageName(), mApp.getAssignmentsKey());
-                                    JSONSharedPreferences.saveJSONArray(mContext, getPackageName(), mApp.getAssignmentsKey(), assignmentArray);
+                                    JSONSharedPreferences.remove(mContext, getPackageName(), mApp.assignmentsKey);
+                                    JSONSharedPreferences.saveJSONArray(mContext, getPackageName(), mApp.assignmentsKey, assignmentArray);
                                     loadAssignmentsToLayout(assignmentArray);
-                                    Snackbar.make(mCoordinatorLayout, getString(R.string.info_updated), Snackbar.LENGTH_SHORT).show();
                                 } catch (JSONException jex) {
                                     Snackbar.make(mCoordinatorLayout, jex.getLocalizedMessage(), Snackbar.LENGTH_LONG).show();
                                 }
@@ -351,27 +307,12 @@ public class MainActivity extends AppCompatActivity {
                         }
                         Snackbar.make(mCoordinatorLayout, vex.getLocalizedMessage(), Snackbar.LENGTH_LONG).show();
                     }
-                }) {
-                    @Override
-                    public Map<String, String> getHeaders() throws AuthFailureError {
-                        Map<String, String> headers = new HashMap<String, String>();
-                        headers.put("User-Agent", mApp.getAgentName());
-                        headers.put("Accept", "application/json");
-                        headers.put("Authorization", "Bearer " + mPrefs.getString(mApp.getTokenKey(), null));
-                        return headers;
-                    }
-                };
-                mQueue.add(getAssignmentsRequest);
+                }));
                 return true;
             } catch (Exception ex) {
                 Snackbar.make(mCoordinatorLayout, ex.getLocalizedMessage(), Snackbar.LENGTH_LONG).show();
                 return false;
             }
-        }
-
-        @Override
-        protected void onPostExecute(final Boolean success) {
-            //
         }
 
         @Override
@@ -383,20 +324,153 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Convert dp to pixel
-     * @param dp int
-     * @return the pixel value
+     * Load assignments from an array to linear layout.
+     * @param assignmentArray a JSON array of assignments
      */
-    public float dp2pixel(int dp) {
-        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, mDisplayMetrics);
-    }
+    public void loadAssignmentsToLayout(JSONArray assignmentArray) {
+        int dp5 = dp2pixelInt(5), dp8 = dp2pixelInt(8);
+        mLinearLayout.removeAllViews();
+        if(assignmentArray.length() == 0) {
+            mLinearLayout.setGravity(Gravity.CENTER_VERTICAL);
+            TextView textView = new TextView(mContext);
+            textView.setTextColor(getColor(R.color.colorBlack));
+            textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+            textView.setText(getString(R.string.info_no_assignment));
+            mLinearLayout.addView(textView);
+        } else {
+            Date now = new Date();
+            PrettyTime prettyTime = new PrettyTime();
+            DateFormat oldDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()),
+                    newDateFormat = new SimpleDateFormat("yyyy-MM-dd (E) HH:mm:ss", Locale.getDefault());
+            mLinearLayout.setGravity(Gravity.NO_GRAVITY);
+            try {
+                for (int i = 0; i < assignmentArray.length(); ++i) {
+                    final JSONObject assignmentObject = assignmentArray.getJSONObject(i);
+                    final int assignmentID = assignmentObject.getInt("id");
+                    final String assignmentName = assignmentObject.getString("name");
+                    final String assignmentContent = assignmentObject.getString("content");
+                    final String assignmentDDLStr = assignmentObject.getString("due_time");
+                    final Boolean assignmentFinished = assignmentObject.getBoolean("finished");
+                    String assignmentDDLDiff = null;
+                    Date assignmentDDLDate = null;
+                    try {
+                        assignmentDDLDate = oldDateFormat.parse(assignmentDDLStr);
+                        List<Duration> durations = prettyTime.calculatePreciseDuration(assignmentDDLDate);
+                        if (durations.size() > 2) durations = durations.subList(0, 2);
+                        assignmentDDLDiff = newDateFormat.format(assignmentDDLDate) + "\n" + prettyTime.format(durations);
+                    } catch (java.text.ParseException jtpex) {
+                        Log.e("ParsingDDL", jtpex.getLocalizedMessage());
+                    }
 
-    /**
-     * Convert dp to pixel (integer)
-     * @param dp int
-     * @return the pixel value (integer)
-     */
-    public int dp2pixelInt(int dp) {
-        return Math.round(dp2pixel(dp));
+                    CardView cardView = new CardView(mContext);
+                    cardView.setClickable(true);
+                    cardView.setUseCompatPadding(true);
+                    cardView.setRadius(dp8);
+                    cardView.setCardElevation(dp5);
+                    cardView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            mBuilder.setIcon(assignmentFinished ? R.drawable.ic_calendar_times : R.drawable.ic_calendar_check)
+                                    .setTitle(getString(assignmentFinished ?
+                                            R.string.assignment_mark_unfinished_title : R.string.assignment_mark_finished_title))
+                                    .setMessage(getString(assignmentFinished ?
+                                            R.string.assignment_mark_unfinished_content : R.string.assignment_mark_finished_content)
+                                            + "\n\n" + assignmentName)
+                                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            Snackbar.make(mCoordinatorLayout,
+                                                    getString(R.string.assignment_mark_progressing_left) + " " + assignmentName
+                                                            + " " + getString(R.string.assignment_mark_progressing_right),
+                                                    Snackbar.LENGTH_SHORT)
+                                                    .show();
+                                            if (!mSwipeRefreshLayout.isRefreshing()) {
+                                                mSwipeRefreshLayout.setRefreshing(true);
+                                            }
+                                            mQueue.add(mApp.new AppJsonObjectRequest(
+                                                    Request.Method.POST, mApp.assignmentStatusURL(assignmentID, !assignmentFinished),
+                                                    null, new Response.Listener<JSONObject>() {
+                                                @Override
+                                                public void onResponse(JSONObject response) {
+                                                    if (mSwipeRefreshLayout.isRefreshing()) {
+                                                        mSwipeRefreshLayout.setRefreshing(false);
+                                                    }
+                                                    try {
+                                                        loadAssignmentsToLayout(response.getJSONArray("data"));
+                                                    } catch (JSONException jex) {
+                                                        Log.e("ASStatusResponseError", jex.getLocalizedMessage());
+                                                    }
+                                                }
+                                            }, new Response.ErrorListener() {
+                                                @Override
+                                                public void onErrorResponse(VolleyError vex) {
+                                                    Log.e("ASStatusUpdateError", vex.getLocalizedMessage());
+                                                }
+                                            }
+                                            ));
+                                        }
+                                    })
+                                    .setNegativeButton(android.R.string.no, null)
+                                    .show();
+                        }
+                    });
+
+                    RelativeLayout relativeLayout = new RelativeLayout(mContext);
+                    relativeLayout.setPadding(dp8, dp8, dp8, dp8);
+                    if (assignmentFinished) {
+                        relativeLayout.setBackgroundColor(getColor(R.color.colorGreenLighten5));
+                    } else if (assignmentDDLDate.before(new Date(now.getTime() + 24*60*60*1000))) {
+                        relativeLayout.setBackgroundColor(getColor(R.color.colorRedLighten5));
+                    } else if (assignmentDDLDate.before(new Date(now.getTime() + 48*60*60*1000))) {
+                        relativeLayout.setBackgroundColor(getColor(R.color.colorAmberLighten5));
+                    }
+
+                    LinearLayout linearLayout = new LinearLayout(mContext);
+                    linearLayout.setOrientation(LinearLayout.VERTICAL);
+                    linearLayout.setPadding(15, 10, 15, 10);
+
+                    TextView textView = new TextView(mContext);
+                    textView.setText(assignmentName);
+                    textView.setTextSize(20);
+                    textView.setTextColor(getColor(R.color.colorBlack));
+
+                    WebView webView = new WebView(mContext);
+                    webView.setBackgroundColor(Color.TRANSPARENT);
+                    webView.loadData(assignmentContent, "text/html; charset=UTF-8", null);
+                    webView.setWebViewClient(new WebViewClient(){
+                        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                            if (url != null && (url.startsWith("http://") || url.startsWith("https://"))) {
+                                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        }
+                    });
+
+                    TextView textView2 = new TextView(mContext);
+                    textView2.setText(assignmentDDLDiff);
+                    textView2.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
+
+                    linearLayout.addView(textView);
+                    linearLayout.addView(webView);
+                    linearLayout.addView(textView2);
+                    relativeLayout.addView(linearLayout);
+                    cardView.addView(relativeLayout);
+
+                    mLinearLayout.addView(cardView);
+                }
+                TextView textView = new TextView(mContext);
+                String assignmentCountStr = getString(R.string.assignment_count_left) + " "
+                        + assignmentArray.length() + " " + getString(R.string.assignment_count_right);
+                textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                textView.setText(assignmentCountStr);
+                textView.setPadding(dp8, dp8 * 2, dp8, dp8 * 2);
+                mLinearLayout.addView(textView);
+            } catch (JSONException jex) {
+                Log.e("LoadASError", jex.getLocalizedMessage());
+            }
+        }
+        Snackbar.make(mCoordinatorLayout, getString(R.string.info_updated), Snackbar.LENGTH_SHORT).show();
     }
 }

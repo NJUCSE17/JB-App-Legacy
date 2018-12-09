@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/about_coordinator_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".AboutActivity">
+    tools:context=".AboutActivity"
+    android:background="@color/colorDefaultBackend">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -47,34 +49,53 @@
             android:textAlignment="center"
             android:textSize="24sp" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:orientation="horizontal">
+        <TableLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
 
-            <Button
-                android:id="@+id/changeLogButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:backgroundTint="@color/colorPrimary"
-                android:elevation="5dp"
-                android:fontFamily="casual"
-                android:text="@string/btn_changelog"
-                android:textSize="18sp"
-                app:icon="@drawable/ic_clipboard_list" />
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
 
-            <Button
-                android:id="@+id/RTFSCButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:elevation="5dp"
-                android:fontFamily="casual"
-                android:text="@string/btn_rtfsc"
-                android:textSize="18sp"
-                android:layout_marginLeft="5dp"
-                app:icon="@drawable/ic_code" />
-        </LinearLayout>
+                <Button
+                    android:id="@+id/updateButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/design_default_color_primary"
+                    android:fontFamily="casual"
+                    android:text="@string/btn_update"
+                    android:textSize="18sp"
+                    app:icon="@drawable/ic_cloud_upload_alt" />
+
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <Button
+                    android:id="@+id/changeLogButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="@color/colorPrimary"
+                    android:fontFamily="casual"
+                    android:text="@string/btn_changelog"
+                    android:textSize="18sp"
+                    app:icon="@drawable/ic_clipboard_list" />
+
+                <Button
+                    android:id="@+id/RTFSCButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="casual"
+                    android:text="@string/btn_rtfsc"
+                    android:textSize="18sp"
+                    app:icon="@drawable/ic_code" />
+
+            </TableRow>
+        </TableLayout>
 
     </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
