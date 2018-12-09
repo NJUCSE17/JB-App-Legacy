@@ -274,7 +274,6 @@ public class MainActivity extends AppCompatActivity {
                                     JSONSharedPreferences.remove(mContext, getPackageName(), mApp.assignmentsKey);
                                     JSONSharedPreferences.saveJSONArray(mContext, getPackageName(), mApp.assignmentsKey, assignmentArray);
                                     loadAssignmentsToLayout(assignmentArray);
-                                    Snackbar.make(mCoordinatorLayout, getString(R.string.info_updated), Snackbar.LENGTH_SHORT).show();
                                 } catch (JSONException jex) {
                                     Snackbar.make(mCoordinatorLayout, jex.getLocalizedMessage(), Snackbar.LENGTH_LONG).show();
                                 }
@@ -465,5 +464,6 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, jex.getLocalizedMessage(), Toast.LENGTH_LONG).show();
             }
         }
+        Snackbar.make(mCoordinatorLayout, getString(R.string.info_updated), Snackbar.LENGTH_SHORT).show();
     }
 }
