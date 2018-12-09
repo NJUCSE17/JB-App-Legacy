@@ -42,6 +42,12 @@
     <string name="error_auth_failure_title">Auth Failure</string>
     <string name="error_auth_failure_content">Credential is not correct or token has expired. You need to login again.</string>
 
+    <!-- Strings related to assignments -->
+    <string name="assignment_mark_finished_title">Finished?</string>
+    <string name="assignment_mark_finished_content">Are you sure you want to mark the folloing assignment as finished?</string>
+    <string name="assignment_mark_unfinished_title">Not finished?</string>
+    <string name="assignment_mark_unfinished_content">Are you sure you want to mark the folloing assignment as unfinished?</string>
+
     <!-- Main Activity -->
     <string name="info_updated">Assignments updated.</string>
     <string name="info_no_assignment">There is no assignment to do.</string>
@@ -53,8 +59,9 @@
     <!-- Change Log -->
     <string name="string_changelog" translatable="false">
         v0.1 2018-12-09
+        \n - Mark assignment as finished/unfinished
         \n - Check update of app using API
-        \n - Code rebase
+        \n - Code rebase and UX update
 
         v0.0 2018-12-07
         \n - Sign in/out using JB Online\'s APIs
