@@ -2,20 +2,18 @@ package com.doowzs.jbapp;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.material.snackbar.Snackbar;
 
 public class WelcomeActivity extends AppCompatActivity {
     // Shared Preferences and Application
-    private JBAppApplication mApp;
-    private SharedPreferences mPrefs;
+    private JBAppApplication mApp = null;
+    private SharedPreferences mPrefs = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,9 +26,9 @@ public class WelcomeActivity extends AppCompatActivity {
         mApp = ((JBAppApplication) getApplication());
         mPrefs = this.getSharedPreferences(getPackageName(), MODE_PRIVATE);
 
-        if (mPrefs.contains(mApp.getTokenKey())) {
+        if (mPrefs.contains(mApp.tokenKey)) {
             Snackbar.make(findViewById(R.id.welcome_coordinator_layout),
-                    getText(R.string.welcome_back) + " " + mPrefs.getString(mApp.getNameKey(), "anonymous"),
+                    getText(R.string.welcome_back) + " " + mPrefs.getString(mApp.nameKey, "anonymous"),
                     Snackbar.LENGTH_LONG)
                     .show();
         }
@@ -38,7 +36,7 @@ public class WelcomeActivity extends AppCompatActivity {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (mPrefs.contains(mApp.getTokenKey())) {
+                if (mPrefs.contains(mApp.tokenKey)) {
                     Intent mainIntent = new Intent(WelcomeActivity.this, MainActivity.class);
                     startActivity(mainIntent);
                 } else {

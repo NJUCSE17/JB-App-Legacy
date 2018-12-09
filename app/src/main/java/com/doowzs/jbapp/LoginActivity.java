@@ -216,7 +216,7 @@ public class LoginActivity extends AppCompatActivity {
                 jParams.put("password", mPassword);
                 JSONObject jsonParams = new JSONObject(jParams);
                 JsonObjectRequest loginRequest = new JsonObjectRequest(
-                        Request.Method.POST, mApp.getLoginURL(), jsonParams,
+                        Request.Method.POST, mApp.loginURL, jsonParams,
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject data) {
@@ -224,9 +224,9 @@ public class LoginActivity extends AppCompatActivity {
                                 showProgress(false);
                                 try {
                                     if (data.getString("status").equals("success")) {
-                                        mPrefs.edit().putString(mApp.getTokenKey(), data.getString("token"))
-                                                .putString(mApp.getIdKey(), data.getString("user_id"))
-                                                .putString(mApp.getNameKey(), data.getString("user_name"))
+                                        mPrefs.edit().putString(mApp.tokenKey, data.getString("token"))
+                                                .putString(mApp.idKey, data.getString("user_id"))
+                                                .putString(mApp.nameKey, data.getString("user_name"))
                                                 .apply();
                                         Intent mainIntent = new Intent(LoginActivity.this, MainActivity.class);
                                         startActivity(mainIntent);
@@ -259,7 +259,7 @@ public class LoginActivity extends AppCompatActivity {
                     @Override
                     public Map<String, String> getHeaders() throws AuthFailureError {
                         Map<String, String> headers = new HashMap<String, String>();
-                        headers.put("User-Agent", mApp.getAgentName());
+                        headers.put("User-Agent", mApp.agentName);
                         headers.put("Accept", "application/json");
                         return headers;
                     }

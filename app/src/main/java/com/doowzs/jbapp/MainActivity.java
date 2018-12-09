@@ -10,16 +10,11 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import android.app.Application;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.icu.util.VersionInfo;
-import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 
 import android.util.DisplayMetrics;
@@ -48,10 +43,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.ocpsoft.prettytime.Duration;
 import org.ocpsoft.prettytime.PrettyTime;
-import org.ocpsoft.prettytime.impl.DurationImpl;
 
-import java.net.URI;
-import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -154,9 +146,9 @@ public class MainActivity extends AppCompatActivity {
         // Update Navigation header with user info
         LinearLayout headerView = (LinearLayout) navigationView.getHeaderView(0);
         TextView navHeaderText1 = (TextView) headerView.getChildAt(0);
-        navHeaderText1.setText(mPrefs.getString(mApp.getNameKey(), "Anonymous"));
+        navHeaderText1.setText(mPrefs.getString(mApp.nameKey, "Anonymous"));
         TextView navHeaderText2 = (TextView) headerView.getChildAt(1);
-        navHeaderText2.setText(mPrefs.getString(mApp.getIdKey(), "404"));
+        navHeaderText2.setText(mPrefs.getString(mApp.idKey, "404"));
 
         // Set up swipe fresh layout
         mSwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
@@ -172,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Load saved assignments
         try {
-            JSONArray assignmentsArray = JSONSharedPreferences.loadJSONArray(mContext, getPackageName(), mApp.getAssignmentsKey());
+            JSONArray assignmentsArray = JSONSharedPreferences.loadJSONArray(mContext, getPackageName(), mApp.assignmentsKey);
             loadAssignmentsToLayout(assignmentsArray);
         } catch (JSONException jex) {
             Toast.makeText(this, jex.getLocalizedMessage(), Toast.LENGTH_LONG).show();
@@ -212,8 +204,8 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         builder.setTitle(getString(R.string.confirm_logout_title))
                 .setMessage(getString(R.string.confirm_logout_content)
-                        + mPrefs.getString(mApp.getIdKey(), "404") + " - "
-                        + mPrefs.getString(mApp.getNameKey(), "Anonymous"))
+                        + mPrefs.getString(mApp.idKey, "404") + " - "
+                        + mPrefs.getString(mApp.nameKey, "Anonymous"))
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         doPerformLogout();
@@ -232,11 +224,11 @@ public class MainActivity extends AppCompatActivity {
      * Handler of true logout event
      */
     private void doPerformLogout() {
-        mPrefs.edit().remove(mApp.getTokenKey())
-                .remove(mApp.getIdKey())
-                .remove(mApp.getNameKey())
+        mPrefs.edit().remove(mApp.tokenKey)
+                .remove(mApp.idKey)
+                .remove(mApp.nameKey)
                 .apply();
-        JSONSharedPreferences.remove(mContext, getPackageName(), mApp.getAssignmentsKey());
+        JSONSharedPreferences.remove(mContext, getPackageName(), mApp.assignmentsKey);
         Intent loginIntent = new Intent(MainActivity.this, LoginActivity.class);
         startActivity(loginIntent);
         finish(); // destroy MainActivity
@@ -332,14 +324,14 @@ public class MainActivity extends AppCompatActivity {
         protected Boolean doInBackground(Void... params) {
             try {
                 JsonObjectRequest getAssignmentsRequest = new JsonObjectRequest(
-                        Request.Method.POST, mApp.getAssignmentsURL(), null,
+                        Request.Method.POST, mApp.assignmentsURL, null,
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject data) {
                                 try {
                                     JSONArray assignmentArray = data.getJSONArray("data");
-                                    JSONSharedPreferences.remove(mContext, getPackageName(), mApp.getAssignmentsKey());
-                                    JSONSharedPreferences.saveJSONArray(mContext, getPackageName(), mApp.getAssignmentsKey(), assignmentArray);
+                                    JSONSharedPreferences.remove(mContext, getPackageName(), mApp.assignmentsKey);
+                                    JSONSharedPreferences.saveJSONArray(mContext, getPackageName(), mApp.assignmentsKey, assignmentArray);
                                     loadAssignmentsToLayout(assignmentArray);
                                     Snackbar.make(mCoordinatorLayout, getString(R.string.info_updated), Snackbar.LENGTH_SHORT).show();
                                 } catch (JSONException jex) {
@@ -379,9 +371,9 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public Map<String, String> getHeaders() throws AuthFailureError {
                         Map<String, String> headers = new HashMap<String, String>();
-                        headers.put("User-Agent", mApp.getAgentName());
+                        headers.put("User-Agent", mApp.agentName);
                         headers.put("Accept", "application/json");
-                        headers.put("Authorization", "Bearer " + mPrefs.getString(mApp.getTokenKey(), null));
+                        headers.put("Authorization", "Bearer " + mPrefs.getString(mApp.tokenKey, null));
                         return headers;
                     }
                 };
