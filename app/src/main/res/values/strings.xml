@@ -16,6 +16,7 @@
     <string name="nav_logout">Logout</string>
 
     <!-- Button Labels -->
+    <string name="btn_update">Check Update</string>
     <string name="btn_changelog">Change Log</string>
     <string name="btn_rtfsc" translatable="false">RTFSC</string>
 
