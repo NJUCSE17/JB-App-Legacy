@@ -41,12 +41,15 @@ import com.google.android.material.snackbar.Snackbar;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.ocpsoft.prettytime.Duration;
 import org.ocpsoft.prettytime.PrettyTime;
+import org.ocpsoft.prettytime.impl.DurationImpl;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -272,7 +275,9 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         oldDDLStr = assignmentObject.getString("due_time");
                         Date ddlDate = oldDateFormat.parse(oldDDLStr);
-                        newDDLStr = newDateFormat.format(ddlDate) + "\n" + prettyTime.format(ddlDate);
+                        List<Duration> durations = prettyTime.calculatePreciseDuration(ddlDate);
+                        if (durations.size() > 2) durations = durations.subList(0, 2);
+                        newDDLStr = newDateFormat.format(ddlDate) + "\n" + prettyTime.format(durations);
                     } catch (java.text.ParseException jtpex) {
                         Toast.makeText(this, jtpex.getLocalizedMessage(), Toast.LENGTH_LONG).show();
                     }

@@ -31,8 +31,8 @@ android {
 
         versionProps.store(versionPropsFile.newWriter(), null)
 
-        mVersionName = "v0.0.${versionProps['VERSION_PATCH']}"
-        mFileName = "JBApp-${mVersionName}.apk"
+        mVersionName = "v0.1.${versionProps['VERSION_PATCH']}"
+        mFileName = "JBApp-${mVersionName}-${versionProps['VERSION_NUMBER']}.apk"
 
         defaultConfig {
             minSdkVersion 23
