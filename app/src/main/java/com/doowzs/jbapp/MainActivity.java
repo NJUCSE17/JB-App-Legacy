@@ -392,12 +392,19 @@ public class MainActivity extends AppCompatActivity {
                                                     null, new Response.Listener<JSONObject>() {
                                                 @Override
                                                 public void onResponse(JSONObject response) {
-                                                    new GetAssignmentsTask().execute();
+                                                    if (mSwipeRefreshLayout.isRefreshing()) {
+                                                        mSwipeRefreshLayout.setRefreshing(false);
+                                                    }
+                                                    try {
+                                                        loadAssignmentsToLayout(response.getJSONArray("data"));
+                                                    } catch (JSONException jex) {
+                                                        Log.e("ASStatusResponseError", jex.getLocalizedMessage());
+                                                    }
                                                 }
                                             }, new Response.ErrorListener() {
                                                 @Override
                                                 public void onErrorResponse(VolleyError vex) {
-                                                    Log.e("AssignmentStatusError", vex.getLocalizedMessage());
+                                                    Log.e("ASStatusUpdateError", vex.getLocalizedMessage());
                                                 }
                                             }
                                             ));
@@ -461,7 +468,7 @@ public class MainActivity extends AppCompatActivity {
                 textView.setPadding(dp8, dp8 * 2, dp8, dp8 * 2);
                 mLinearLayout.addView(textView);
             } catch (JSONException jex) {
-                Toast.makeText(this, jex.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                Log.e("LoadASError", jex.getLocalizedMessage());
             }
         }
         Snackbar.make(mCoordinatorLayout, getString(R.string.info_updated), Snackbar.LENGTH_SHORT).show();
