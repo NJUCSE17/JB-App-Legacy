@@ -41,6 +41,10 @@ public class JBAppApplication extends Application {
     public  final String updateURL      = rootURL + "/app";
     public  final String loginURL       = rootURL + "/login";
     public  final String assignmentsURL = rootURL + "/assignments";
+    public String assignmentStatusURL (int id, Boolean toSetFinished) {
+        return rootURL + "/assignment/" + String.valueOf(id) + "/"
+                + (toSetFinished ? "finish" : "reset");
+    }
 
     // Shared Preference
     private SharedPreferences mPrefs = null;

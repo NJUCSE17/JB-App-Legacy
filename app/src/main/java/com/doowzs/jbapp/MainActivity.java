@@ -1,14 +1,4 @@
 package com.doowzs.jbapp;
-import com.doowzs.jbapp.utils.JSONSharedPreferences;
-
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -18,7 +8,6 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
@@ -38,6 +27,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.Volley;
+import com.doowzs.jbapp.utils.JSONSharedPreferences;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -46,13 +36,21 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.ocpsoft.prettytime.Duration;
 import org.ocpsoft.prettytime.PrettyTime;
-import org.ocpsoft.prettytime.TimeUnit;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 public class MainActivity extends AppCompatActivity {
     // Application and Shared Preferences
@@ -344,7 +342,7 @@ public class MainActivity extends AppCompatActivity {
             Date now = new Date();
             PrettyTime prettyTime = new PrettyTime();
             DateFormat oldDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()),
-                newDateFormat = new SimpleDateFormat("yyyy-MM-dd (E) HH:mm:ss", Locale.getDefault());
+                    newDateFormat = new SimpleDateFormat("yyyy-MM-dd (E) HH:mm:ss", Locale.getDefault());
             mLinearLayout.setGravity(Gravity.NO_GRAVITY);
             try {
                 for (int i = 0; i < assignmentArray.length(); ++i) {
@@ -373,13 +371,39 @@ public class MainActivity extends AppCompatActivity {
                     cardView.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            mBuilder.setIcon(R.drawable.ic_check_square)
+                            mBuilder.setIcon(assignmentFinished ? R.drawable.ic_calendar_times : R.drawable.ic_calendar_check)
                                     .setTitle(getString(assignmentFinished ?
                                             R.string.assignment_mark_unfinished_title : R.string.assignment_mark_finished_title))
                                     .setMessage(getString(assignmentFinished ?
                                             R.string.assignment_mark_unfinished_content : R.string.assignment_mark_finished_content)
                                             + "\n\n" + assignmentName)
-                                    .setPositiveButton(android.R.string.yes, null)
+                                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            Snackbar.make(mCoordinatorLayout,
+                                                    getString(R.string.assignment_mark_progressing_left) + " " + assignmentName
+                                                            + " " + getString(R.string.assignment_mark_progressing_right),
+                                                    Snackbar.LENGTH_SHORT)
+                                                    .show();
+                                            if (!mSwipeRefreshLayout.isRefreshing()) {
+                                                mSwipeRefreshLayout.setRefreshing(true);
+                                            }
+                                            mQueue.add(mApp.new AppJsonObjectRequest(
+                                                    Request.Method.POST, mApp.assignmentStatusURL(assignmentID, !assignmentFinished),
+                                                    null, new Response.Listener<JSONObject>() {
+                                                @Override
+                                                public void onResponse(JSONObject response) {
+                                                    new GetAssignmentsTask().execute();
+                                                }
+                                            }, new Response.ErrorListener() {
+                                                @Override
+                                                public void onErrorResponse(VolleyError vex) {
+                                                    Log.e("AssignmentStatusError", vex.getLocalizedMessage());
+                                                }
+                                            }
+                                            ));
+                                        }
+                                    })
                                     .setNegativeButton(android.R.string.no, null)
                                     .show();
                         }
@@ -388,11 +412,11 @@ public class MainActivity extends AppCompatActivity {
                     RelativeLayout relativeLayout = new RelativeLayout(mContext);
                     relativeLayout.setPadding(dp8, dp8, dp8, dp8);
                     if (assignmentFinished) {
-                        relativeLayout.setBackground(getDrawable(R.drawable.background_success));
+                        relativeLayout.setBackgroundColor(getColor(R.color.colorGreenLighten5));
                     } else if (assignmentDDLDate.before(new Date(now.getTime() + 24*60*60*1000))) {
-                        relativeLayout.setBackground(getDrawable(R.drawable.background_danger));
+                        relativeLayout.setBackgroundColor(getColor(R.color.colorRedLighten5));
                     } else if (assignmentDDLDate.before(new Date(now.getTime() + 48*60*60*1000))) {
-                        relativeLayout.setBackground(getDrawable(R.drawable.background_warning));
+                        relativeLayout.setBackgroundColor(getColor(R.color.colorAmberLighten5));
                     }
 
                     LinearLayout linearLayout = new LinearLayout(mContext);
