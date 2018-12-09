@@ -6,10 +6,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
@@ -36,7 +36,7 @@ public class AboutActivity extends AppCompatActivity {
         try {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         } catch (Exception ex) {
-            Toast.makeText(this, ex.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+            Log.e("AboutPageSetup", ex.getLocalizedMessage());
         }
 
         TextView versionTextView = findViewById(R.id.versionTextView);
@@ -57,8 +57,7 @@ public class AboutActivity extends AppCompatActivity {
         scButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent rtfsc = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.app_repo)));
-                startActivity(rtfsc);
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(mApp.repoURL)));
             }
         });
 

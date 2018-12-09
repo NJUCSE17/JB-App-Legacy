@@ -35,6 +35,7 @@ public class JBAppApplication extends Application {
 
     // URLs for API connections
     public  final String agentName = "JB App (Android)";
+    public  final String repoURL = "https://github.com/doowzs/JB-App";
     private final String rootURL = "https://njujb.com/api";
     public  final String updateURL      = rootURL + "/app";
     public  final String loginURL       = rootURL + "/login";
@@ -62,8 +63,7 @@ public class JBAppApplication extends Application {
                                             @Override
                                             public void onClick(DialogInterface dialog, int which) {
                                                 try {
-                                                    Intent updateIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(version.getString("link")));
-                                                    startActivity(updateIntent);
+                                                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(version.getString("link"))));
                                                 } catch (JSONException jex) {
                                                     Log.e("UpdateIntent", jex.getLocalizedMessage());
                                                 }

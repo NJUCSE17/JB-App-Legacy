@@ -69,7 +69,6 @@ public class MainActivity extends AppCompatActivity {
     private SwipeRefreshLayout mSwipeRefreshLayout = null;
     private AlertDialog.Builder mBuilder = null;
 
-
     // Volley Request Queue
     private RequestQueue mQueue = null;
     private GetAssignmentsTask mGetAssignmentsTask = null;
