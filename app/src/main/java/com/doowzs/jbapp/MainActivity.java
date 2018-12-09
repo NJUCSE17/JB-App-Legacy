@@ -309,6 +309,12 @@ public class MainActivity extends AppCompatActivity {
      * Represents an asynchronous task to fetch assignmens.
      */
     public class GetAssignmentsTask extends AsyncTask<Void, Void, Boolean> {
+        GetAssignmentsTask() {
+            if (!mSwipeRefreshLayout.isRefreshing()) {
+                mSwipeRefreshLayout.setRefreshing(true);
+            }
+        }
+
         @Override
         protected Boolean doInBackground(Void... params) {
             try {
@@ -372,11 +378,6 @@ public class MainActivity extends AppCompatActivity {
                 Snackbar.make(mCoordinatorLayout, ex.getLocalizedMessage(), Snackbar.LENGTH_LONG).show();
                 return false;
             }
-        }
-
-        @Override
-        protected void onPostExecute(final Boolean success) {
-            //
         }
 
         @Override
