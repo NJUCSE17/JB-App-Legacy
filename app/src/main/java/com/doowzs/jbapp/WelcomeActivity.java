@@ -25,7 +25,7 @@ public class WelcomeActivity extends AppCompatActivity {
         TextView versionTextView = findViewById(R.id.textView_version);
         versionTextView.setText(BuildConfig.VERSION_NAME);
 
-        mApp = ((JBAppApplication) this.getApplication());
+        mApp = ((JBAppApplication) getApplication());
         mPrefs = this.getSharedPreferences(getPackageName(), MODE_PRIVATE);
 
         if (mPrefs.contains(mApp.getTokenKey())) {

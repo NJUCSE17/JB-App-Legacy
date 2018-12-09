@@ -73,10 +73,11 @@ public class MainActivity extends AppCompatActivity {
     private CoordinatorLayout mCoordinatorLayout = null;
     private LinearLayout mLinearLayout = null;
     private SwipeRefreshLayout mSwipeRefreshLayout = null;
+    private AlertDialog.Builder mBuilder = null;
+
 
     // Volley Request Queue
     private RequestQueue mQueue = null;
-    private CheckUpdateTask mCheckUpdateTask = null;
     private GetAssignmentsTask mGetAssignmentsTask = null;
 
     /**
@@ -103,6 +104,7 @@ public class MainActivity extends AppCompatActivity {
         mDrawerLayout = findViewById(R.id.drawer_layout);
         mCoordinatorLayout = findViewById(R.id.main_coordinator_layout);
         mLinearLayout = findViewById(R.id.assignment_layout);
+        mBuilder = new AlertDialog.Builder(MainActivity.this);
 
         // Listen to drawer events
         mDrawerLayout.addDrawerListener(
@@ -177,8 +179,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Check app update
-        mCheckUpdateTask = new CheckUpdateTask();
-        mCheckUpdateTask.execute();
+        mQueue.add(mApp.checkUpdateRequest(mBuilder));
 
         // Fetch latest assignments
         mGetAssignmentsTask = new GetAssignmentsTask();
@@ -313,75 +314,6 @@ public class MainActivity extends AppCompatActivity {
                 mLinearLayout.addView(textView);
             } catch (JSONException jex) {
                 Toast.makeText(this, jex.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-            }
-        }
-    }
-
-    /**
-     * Represents an asynchronous task to check update of app.
-     */
-    public class CheckUpdateTask extends AsyncTask<Void, Void, Boolean> {
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            try {
-                JsonObjectRequest getUpdateRequest = new JsonObjectRequest(
-                        Request.Method.POST, mApp.getUpdateURL(), null,
-                        new Response.Listener<JSONObject>() {
-                            @Override
-                            public void onResponse(JSONObject data) {
-                                try {
-                                    final JSONObject version = data.getJSONObject("data");
-                                    PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-                                    if (version.getInt("number") > pInfo.versionCode) {
-                                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                                        builder.setIcon(R.drawable.ic_arrow_up)
-                                                .setTitle(getString(R.string.update_title))
-                                                .setMessage(getString(R.string.update_current_version) + pInfo.versionName + "\n"
-                                                    + getString(R.string.update_latest_version) + version.getString("name") + "\n\n"
-                                                    + getString(R.string.update_contents) + version.getString("info") + "\n\n"
-                                                    + getString(R.string.update_confirm))
-                                                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                                                    @Override
-                                                    public void onClick(DialogInterface dialog, int which) {
-                                                        try {
-                                                            Intent updateIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(version.getString("link")));
-                                                            startActivity(updateIntent);
-                                                        } catch (JSONException jex) {
-                                                            Toast.makeText(MainActivity.this, jex.toString(), Toast.LENGTH_LONG).show();
-                                                        }
-                                                    }
-                                                })
-                                                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                                                    @Override
-                                                    public void onClick(DialogInterface dialog, int which) {
-                                                        //
-                                                    }
-                                                })
-                                                .show();
-                                    }
-                                } catch (Exception ex) {
-                                    Snackbar.make(mCoordinatorLayout, ex.getLocalizedMessage(), Snackbar.LENGTH_LONG).show();
-                                }
-                            }
-                        }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError vex) {
-                        Snackbar.make(mCoordinatorLayout, vex.getLocalizedMessage(), Snackbar.LENGTH_LONG).show();
-                    }
-                }) {
-                    @Override
-                    public Map<String, String> getHeaders() throws AuthFailureError {
-                        Map<String, String> headers = new HashMap<String, String>();
-                        headers.put("User-Agent", mApp.getAgentName());
-                        headers.put("Accept", "application/json");
-                        return headers;
-                    }
-                };
-                mQueue.add(getUpdateRequest);
-                return true;
-            } catch (Exception ex) {
-                Snackbar.make(mCoordinatorLayout, ex.getLocalizedMessage(), Snackbar.LENGTH_LONG).show();
-                return false;
             }
         }
     }
