@@ -52,6 +52,14 @@ public class JBAppApplication extends Application {
     }
 
     /**
+     * Get the update API URL.
+     * @return updateURL
+     */
+    public String getUpdateURL() {
+        return rootURL + "app";
+    }
+
+    /**
      * Get the login API URL.
      * @return loginURL
      */

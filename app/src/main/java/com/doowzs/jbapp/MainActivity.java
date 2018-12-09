@@ -10,11 +10,16 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.icu.util.VersionInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 
 import android.util.DisplayMetrics;
@@ -45,6 +50,8 @@ import org.ocpsoft.prettytime.Duration;
 import org.ocpsoft.prettytime.PrettyTime;
 import org.ocpsoft.prettytime.impl.DurationImpl;
 
+import java.net.URI;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -69,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Volley Request Queue
     private RequestQueue mQueue = null;
+    private CheckUpdateTask mCheckUpdateTask = null;
     private GetAssignmentsTask mGetAssignmentsTask = null;
 
     /**
@@ -167,6 +175,10 @@ public class MainActivity extends AppCompatActivity {
         } catch (JSONException jex) {
             Toast.makeText(this, jex.getLocalizedMessage(), Toast.LENGTH_LONG).show();
         }
+
+        // Check app update
+        mCheckUpdateTask = new CheckUpdateTask();
+        mCheckUpdateTask.execute();
 
         // Fetch latest assignments
         mGetAssignmentsTask = new GetAssignmentsTask();
@@ -301,6 +313,75 @@ public class MainActivity extends AppCompatActivity {
                 mLinearLayout.addView(textView);
             } catch (JSONException jex) {
                 Toast.makeText(this, jex.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    /**
+     * Represents an asynchronous task to check update of app.
+     */
+    public class CheckUpdateTask extends AsyncTask<Void, Void, Boolean> {
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            try {
+                JsonObjectRequest getUpdateRequest = new JsonObjectRequest(
+                        Request.Method.POST, mApp.getUpdateURL(), null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject data) {
+                                try {
+                                    final JSONObject version = data.getJSONObject("data");
+                                    PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+                                    if (version.getInt("number") > pInfo.versionCode) {
+                                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                                        builder.setIcon(R.drawable.ic_arrow_up)
+                                                .setTitle(getString(R.string.update_title))
+                                                .setMessage(getString(R.string.update_current_version) + pInfo.versionName + "\n"
+                                                    + getString(R.string.update_latest_version) + version.getString("name") + "\n\n"
+                                                    + getString(R.string.update_contents) + version.getString("info") + "\n\n"
+                                                    + getString(R.string.update_confirm))
+                                                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialog, int which) {
+                                                        try {
+                                                            Intent updateIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(version.getString("link")));
+                                                            startActivity(updateIntent);
+                                                        } catch (JSONException jex) {
+                                                            Toast.makeText(MainActivity.this, jex.toString(), Toast.LENGTH_LONG).show();
+                                                        }
+                                                    }
+                                                })
+                                                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialog, int which) {
+                                                        //
+                                                    }
+                                                })
+                                                .show();
+                                    }
+                                } catch (Exception ex) {
+                                    Snackbar.make(mCoordinatorLayout, ex.getLocalizedMessage(), Snackbar.LENGTH_LONG).show();
+                                }
+                            }
+                        }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError vex) {
+                        Snackbar.make(mCoordinatorLayout, vex.getLocalizedMessage(), Snackbar.LENGTH_LONG).show();
+                    }
+                }) {
+                    @Override
+                    public Map<String, String> getHeaders() throws AuthFailureError {
+                        Map<String, String> headers = new HashMap<String, String>();
+                        headers.put("User-Agent", mApp.getAgentName());
+                        headers.put("Accept", "application/json");
+                        return headers;
+                    }
+                };
+                mQueue.add(getUpdateRequest);
+                return true;
+            } catch (Exception ex) {
+                Snackbar.make(mCoordinatorLayout, ex.getLocalizedMessage(), Snackbar.LENGTH_LONG).show();
+                return false;
             }
         }
     }
