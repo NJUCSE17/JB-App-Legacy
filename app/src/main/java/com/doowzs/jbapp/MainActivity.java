@@ -271,7 +271,7 @@ public class MainActivity extends AppCompatActivity {
 
                     TextView textView = new TextView(mContext);
                     textView.setText(assignmentObject.getString("name"));
-                    textView.setTextSize(16);
+                    textView.setTextSize(20);
                     textView.setTextColor(getColor(R.color.colorBlack));
 
                     WebView webView = new WebView(mContext);
