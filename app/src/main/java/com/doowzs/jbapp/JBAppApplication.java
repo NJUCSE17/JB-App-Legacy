@@ -1,8 +1,10 @@
 package com.doowzs.jbapp;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.util.Log;
 
@@ -41,11 +43,20 @@ public class JBAppApplication extends Application {
     public  final String loginURL       = rootURL + "/login";
     public  final String assignmentsURL = rootURL + "/assignments";
 
+    // Shared Preference
+    private SharedPreferences mPrefs = null;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        mPrefs = getSharedPreferences(pkgName, MODE_PRIVATE);
+    }
+
     /**
      * Represents an asynchronous task to check update of app.
      */
     public Request checkUpdateRequest(final AlertDialog.Builder builder) {
-        return new JsonObjectRequest(
+        return new AppJsonObjectRequest(
                 Request.Method.POST, updateURL, null,
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -87,14 +98,36 @@ public class JBAppApplication extends Application {
             public void onErrorResponse(VolleyError vex) {
                 Log.e("UpdateError", vex.getLocalizedMessage());
             }
-        }) {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> headers = new HashMap<String, String>();
-                headers.put("User-Agent", agentName);
-                headers.put("Accept", "application/json");
-                return headers;
+        });
+    }
+
+    /**
+     * Represent a JsonObjectRequest with automatic credential headers.
+     */
+    public class AppJsonObjectRequest extends JsonObjectRequest {
+        public AppJsonObjectRequest(
+                int method,
+                String url,
+                JSONObject jsonRequest,
+                Response.Listener<JSONObject> listener,
+                Response.ErrorListener errorListener) {
+            super(
+                    method,
+                    url,
+                    jsonRequest,
+                    listener,
+                    errorListener);
+        }
+
+        @Override
+        public Map<String, String> getHeaders() throws AuthFailureError {
+            Map<String, String> headers = new HashMap<String, String>();
+            headers.put("User-Agent", agentName);
+            headers.put("Accept", "application/json");
+            if (mPrefs.contains(tokenKey)) {
+                headers.put("Authorization", "Bearer " + mPrefs.getString(tokenKey, null));
             }
-        };
+            return headers;
+        }
     }
 }

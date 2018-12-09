@@ -35,7 +35,6 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
@@ -49,10 +48,8 @@ import org.ocpsoft.prettytime.PrettyTime;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
     // Application and Shared Preferences
@@ -236,89 +233,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Load assignments from an array to linear layout.
-     * @param assignmentArray a JSON array of assignments
+     * Convert dp to pixel
+     * @param dp int
+     * @return the pixel value
      */
-    public void loadAssignmentsToLayout(JSONArray assignmentArray) {
-        int dp5 = dp2pixelInt(5), dp8 = dp2pixelInt(8);
-        mLinearLayout.removeAllViews();
-        if(assignmentArray.length() == 0) {
-            mLinearLayout.setGravity(Gravity.CENTER_VERTICAL);
-            TextView textView = new TextView(mContext);
-            textView.setTextColor(getColor(R.color.colorBlack));
-            textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-            textView.setText(getString(R.string.info_no_assignment));
-            mLinearLayout.addView(textView);
-        } else {
-            PrettyTime prettyTime = new PrettyTime();
-            DateFormat oldDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()),
-                newDateFormat = new SimpleDateFormat("yyyy-MM-dd (E) HH:mm:ss", Locale.getDefault());
-            mLinearLayout.setGravity(Gravity.NO_GRAVITY);
-            try {
-                for (int i = 0; i < assignmentArray.length(); ++i) {
-                    JSONObject assignmentObject = assignmentArray.getJSONObject(i);
-                    CardView cardView = new CardView(mContext);
-                    cardView.setClickable(true);
-                    cardView.setUseCompatPadding(true);
-                    cardView.setRadius(dp8);
-                    cardView.setContentPadding(dp8, dp8, dp8, dp8);
-                    cardView.setCardElevation(dp5);
+    public float dp2pixel(int dp) {
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, mDisplayMetrics);
+    }
 
-                    RelativeLayout relativeLayout = new RelativeLayout(mContext);
-                    LinearLayout linearLayout = new LinearLayout(mContext);
-                    linearLayout.setOrientation(LinearLayout.VERTICAL);
-                    linearLayout.setPadding(15, 10, 15, 10);
-
-                    TextView textView = new TextView(mContext);
-                    textView.setText(assignmentObject.getString("name"));
-                    textView.setTextSize(20);
-                    textView.setTextColor(getColor(R.color.colorBlack));
-
-                    WebView webView = new WebView(mContext);
-                    webView.loadData(assignmentObject.getString("content"), "text/html; charset=UTF-8", null);
-                    webView.setWebViewClient(new WebViewClient(){
-                        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                            if (url != null && (url.startsWith("http://") || url.startsWith("https://"))) {
-                                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
-                                return true;
-                            } else {
-                                return false;
-                            }
-                        }
-                    });
-
-                    String oldDDLStr = null, newDDLStr = null;
-                    try {
-                        oldDDLStr = assignmentObject.getString("due_time");
-                        Date ddlDate = oldDateFormat.parse(oldDDLStr);
-                        List<Duration> durations = prettyTime.calculatePreciseDuration(ddlDate);
-                        if (durations.size() > 2) durations = durations.subList(0, 2);
-                        newDDLStr = newDateFormat.format(ddlDate) + "\n" + prettyTime.format(durations);
-                    } catch (java.text.ParseException jtpex) {
-                        Toast.makeText(this, jtpex.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-                    }
-                    TextView textView2 = new TextView(mContext);
-                    textView2.setText(newDDLStr);
-                    textView2.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
-
-                    linearLayout.addView(textView);
-                    linearLayout.addView(webView);
-                    linearLayout.addView(textView2);
-                    relativeLayout.addView(linearLayout);
-                    cardView.addView(relativeLayout);
-                    mLinearLayout.addView(cardView);
-                }
-                TextView textView = new TextView(mContext);
-                String assignmentCountStr = getString(R.string.assignment_count_left) + " "
-                        + assignmentArray.length() + " " + getString(R.string.assignment_count_right);
-                textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-                textView.setText(assignmentCountStr);
-                textView.setPadding(dp8, dp8 * 2, dp8, dp8 * 2);
-                mLinearLayout.addView(textView);
-            } catch (JSONException jex) {
-                Toast.makeText(this, jex.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-            }
-        }
+    /**
+     * Convert dp to pixel (integer)
+     * @param dp int
+     * @return the pixel value (integer)
+     */
+    public int dp2pixelInt(int dp) {
+        return Math.round(dp2pixel(dp));
     }
 
     /**
@@ -334,7 +263,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(Void... params) {
             try {
-                JsonObjectRequest getAssignmentsRequest = new JsonObjectRequest(
+                mQueue.add(mApp.new AppJsonObjectRequest(
                         Request.Method.POST, mApp.assignmentsURL, null,
                         new Response.Listener<JSONObject>() {
                             @Override
@@ -378,17 +307,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                         Snackbar.make(mCoordinatorLayout, vex.getLocalizedMessage(), Snackbar.LENGTH_LONG).show();
                     }
-                }) {
-                    @Override
-                    public Map<String, String> getHeaders() throws AuthFailureError {
-                        Map<String, String> headers = new HashMap<String, String>();
-                        headers.put("User-Agent", mApp.agentName);
-                        headers.put("Accept", "application/json");
-                        headers.put("Authorization", "Bearer " + mPrefs.getString(mApp.tokenKey, null));
-                        return headers;
-                    }
-                };
-                mQueue.add(getAssignmentsRequest);
+                }));
                 return true;
             } catch (Exception ex) {
                 Snackbar.make(mCoordinatorLayout, ex.getLocalizedMessage(), Snackbar.LENGTH_LONG).show();
@@ -405,20 +324,110 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Convert dp to pixel
-     * @param dp int
-     * @return the pixel value
+     * Load assignments from an array to linear layout.
+     * @param assignmentArray a JSON array of assignments
      */
-    public float dp2pixel(int dp) {
-        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, mDisplayMetrics);
-    }
+    public void loadAssignmentsToLayout(JSONArray assignmentArray) {
+        int dp5 = dp2pixelInt(5), dp8 = dp2pixelInt(8);
+        mLinearLayout.removeAllViews();
+        if(assignmentArray.length() == 0) {
+            mLinearLayout.setGravity(Gravity.CENTER_VERTICAL);
+            TextView textView = new TextView(mContext);
+            textView.setTextColor(getColor(R.color.colorBlack));
+            textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+            textView.setText(getString(R.string.info_no_assignment));
+            mLinearLayout.addView(textView);
+        } else {
+            PrettyTime prettyTime = new PrettyTime();
+            DateFormat oldDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()),
+                newDateFormat = new SimpleDateFormat("yyyy-MM-dd (E) HH:mm:ss", Locale.getDefault());
+            mLinearLayout.setGravity(Gravity.NO_GRAVITY);
+            try {
+                for (int i = 0; i < assignmentArray.length(); ++i) {
+                    final JSONObject assignmentObject = assignmentArray.getJSONObject(i);
+                    final int assignmentID = assignmentObject.getInt("id");
+                    final String assignmentName = assignmentObject.getString("name");
+                    final String assignmentContent = assignmentObject.getString("content");
+                    final String assignmentDDL = assignmentObject.getString("due_time");
 
-    /**
-     * Convert dp to pixel (integer)
-     * @param dp int
-     * @return the pixel value (integer)
-     */
-    public int dp2pixelInt(int dp) {
-        return Math.round(dp2pixel(dp));
+                    CardView cardView = new CardView(mContext);
+                    cardView.setClickable(true);
+                    cardView.setUseCompatPadding(true);
+                    cardView.setRadius(dp8);
+                    cardView.setContentPadding(dp8, dp8, dp8, dp8);
+                    cardView.setCardElevation(dp5);
+                    cardView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            mBuilder.setIcon(R.drawable.ic_check_square)
+                                    .setTitle(getString(R.string.assignment_mark_finished_title))
+                                    .setMessage(getString(R.string.assignment_mark_finished_content)
+                                            + "\n\n" + assignmentName)
+                                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+
+                                        }
+                                    })
+                                    .setNegativeButton(android.R.string.no, null)
+                                    .show();
+                        }
+                    });
+
+                    RelativeLayout relativeLayout = new RelativeLayout(mContext);
+                    LinearLayout linearLayout = new LinearLayout(mContext);
+                    linearLayout.setOrientation(LinearLayout.VERTICAL);
+                    linearLayout.setPadding(15, 10, 15, 10);
+
+                    TextView textView = new TextView(mContext);
+                    textView.setText(assignmentName);
+                    textView.setTextSize(20);
+                    textView.setTextColor(getColor(R.color.colorBlack));
+
+                    WebView webView = new WebView(mContext);
+                    webView.loadData(assignmentContent, "text/html; charset=UTF-8", null);
+                    webView.setWebViewClient(new WebViewClient(){
+                        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                            if (url != null && (url.startsWith("http://") || url.startsWith("https://"))) {
+                                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        }
+                    });
+
+                    String oldDDLStr = null, newDDLStr = null;
+                    try {
+                        oldDDLStr = assignmentDDL;
+                        Date ddlDate = oldDateFormat.parse(oldDDLStr);
+                        List<Duration> durations = prettyTime.calculatePreciseDuration(ddlDate);
+                        if (durations.size() > 2) durations = durations.subList(0, 2);
+                        newDDLStr = newDateFormat.format(ddlDate) + "\n" + prettyTime.format(durations);
+                    } catch (java.text.ParseException jtpex) {
+                        Toast.makeText(this, jtpex.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                    }
+                    TextView textView2 = new TextView(mContext);
+                    textView2.setText(newDDLStr);
+                    textView2.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
+
+                    linearLayout.addView(textView);
+                    linearLayout.addView(webView);
+                    linearLayout.addView(textView2);
+                    relativeLayout.addView(linearLayout);
+                    cardView.addView(relativeLayout);
+                    mLinearLayout.addView(cardView);
+                }
+                TextView textView = new TextView(mContext);
+                String assignmentCountStr = getString(R.string.assignment_count_left) + " "
+                        + assignmentArray.length() + " " + getString(R.string.assignment_count_right);
+                textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                textView.setText(assignmentCountStr);
+                textView.setPadding(dp8, dp8 * 2, dp8, dp8 * 2);
+                mLinearLayout.addView(textView);
+            } catch (JSONException jex) {
+                Toast.makeText(this, jex.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+            }
+        }
     }
 }
