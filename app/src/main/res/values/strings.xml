@@ -47,6 +47,8 @@
     <string name="assignment_mark_finished_content">Are you sure you want to mark the folloing assignment as finished?</string>
     <string name="assignment_mark_unfinished_title">Not finished?</string>
     <string name="assignment_mark_unfinished_content">Are you sure you want to mark the folloing assignment as unfinished?</string>
+    <string name="assignment_mark_progressing_left">Updating the status of assignment</string>
+    <string name="assignment_mark_progressing_right">&#8230;</string>
 
     <!-- Main Activity -->
     <string name="info_updated">Assignments updated.</string>

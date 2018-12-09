@@ -37,4 +37,6 @@
     <string name="assignment_mark_finished_title">已完成？</string>
     <string name="assignment_mark_finished_content">你确定要标记以下作业为已完成吗？</string>
     <string name="assignment_mark_unfinished_content">你确定要重置以下作业的状态吗？</string>
+    <string name="assignment_mark_progressing_left">正在更新作业</string>
+    <string name="assignment_mark_progressing_right">的状态&#8230;</string>
 </resources>
