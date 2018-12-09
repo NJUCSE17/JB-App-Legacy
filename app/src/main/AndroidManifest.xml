@@ -34,7 +34,7 @@
             android:windowSoftInputMode="stateVisible|adjustResize"></activity>
         <activity android:name=".AboutActivity"
             android:label="@string/title_activity_about"
-            android:theme="@style/AppTheme"></activity>
+            android:theme="@style/AppTheme.Translucent"></activity>
     </application>
 
 </manifest>

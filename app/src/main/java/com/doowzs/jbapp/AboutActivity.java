@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
+import com.r0adkll.slidr.Slidr;
 
 public class AboutActivity extends AppCompatActivity {
     // Application Helper
@@ -28,6 +29,7 @@ public class AboutActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
+        Slidr.attach(this);
 
         mApp = (JBAppApplication) getApplication();
         mBuilder = new AlertDialog.Builder(AboutActivity.this);

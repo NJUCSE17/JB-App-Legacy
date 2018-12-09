@@ -5,7 +5,8 @@
     android:id="@+id/about_coordinator_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".AboutActivity">
+    tools:context=".AboutActivity"
+    android:background="@color/colorWhite">
 
     <LinearLayout
         android:layout_width="match_parent"
