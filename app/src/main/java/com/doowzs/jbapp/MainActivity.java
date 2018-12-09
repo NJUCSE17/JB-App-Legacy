@@ -169,9 +169,6 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, jex.getLocalizedMessage(), Toast.LENGTH_LONG).show();
         }
 
-        // Check app update
-        mQueue.add(mApp.checkUpdateRequest(mBuilder));
-
         // Fetch latest assignments
         mGetAssignmentsTask = new GetAssignmentsTask();
         mGetAssignmentsTask.execute();

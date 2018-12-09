@@ -12,6 +12,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -34,6 +35,7 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 /**
@@ -54,6 +56,7 @@ public class LoginActivity extends AppCompatActivity {
     Context mContext = null;
 
     // UI references.
+    private AlertDialog.Builder mBuilder = null;
     private TextInputEditText mStudentIDView;
     private TextInputEditText mPasswordView;
     private View mProgressView;
@@ -69,6 +72,10 @@ public class LoginActivity extends AppCompatActivity {
         mQueue = Volley.newRequestQueue(this);
         mIndent = getIntent();
         mContext = getBaseContext();
+
+        // Check app update
+        mBuilder = new AlertDialog.Builder(LoginActivity.this);
+        mQueue.add(mApp.checkUpdateRequest(mBuilder));
 
         // Set up the login form.
         mStudentIDView = (TextInputEditText) findViewById(R.id.student_id);

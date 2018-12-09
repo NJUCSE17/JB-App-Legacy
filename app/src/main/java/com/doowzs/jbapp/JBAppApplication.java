@@ -77,18 +77,15 @@ public class JBAppApplication extends Application {
                                             @Override
                                             public void onClick(DialogInterface dialog, int which) {
                                                 try {
-                                                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(version.getString("link"))));
+                                                    startActivity(new Intent(Intent.ACTION_VIEW,
+                                                            Uri.parse(version.getString("link")))
+                                                            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
                                                 } catch (JSONException jex) {
                                                     Log.e("UpdateIntent", jex.getLocalizedMessage());
                                                 }
                                             }
                                         })
-                                        .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialog, int which) {
-                                                //
-                                            }
-                                        })
+                                        .setNegativeButton(android.R.string.no, null)
                                         .show();
                                 Log.d("debug", "Request Finished.");
                             }
