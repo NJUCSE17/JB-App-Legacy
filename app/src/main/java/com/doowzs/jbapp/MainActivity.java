@@ -14,11 +14,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.MenuItem;
@@ -44,6 +46,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.ocpsoft.prettytime.Duration;
 import org.ocpsoft.prettytime.PrettyTime;
+import org.ocpsoft.prettytime.TimeUnit;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -338,6 +341,7 @@ public class MainActivity extends AppCompatActivity {
             textView.setText(getString(R.string.info_no_assignment));
             mLinearLayout.addView(textView);
         } else {
+            Date now = new Date();
             PrettyTime prettyTime = new PrettyTime();
             DateFormat oldDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()),
                 newDateFormat = new SimpleDateFormat("yyyy-MM-dd (E) HH:mm:ss", Locale.getDefault());
@@ -348,33 +352,49 @@ public class MainActivity extends AppCompatActivity {
                     final int assignmentID = assignmentObject.getInt("id");
                     final String assignmentName = assignmentObject.getString("name");
                     final String assignmentContent = assignmentObject.getString("content");
-                    final String assignmentDDL = assignmentObject.getString("due_time");
+                    final String assignmentDDLStr = assignmentObject.getString("due_time");
+                    final Boolean assignmentFinished = assignmentObject.getBoolean("finished");
+                    String assignmentDDLDiff = null;
+                    Date assignmentDDLDate = null;
+                    try {
+                        assignmentDDLDate = oldDateFormat.parse(assignmentDDLStr);
+                        List<Duration> durations = prettyTime.calculatePreciseDuration(assignmentDDLDate);
+                        if (durations.size() > 2) durations = durations.subList(0, 2);
+                        assignmentDDLDiff = newDateFormat.format(assignmentDDLDate) + "\n" + prettyTime.format(durations);
+                    } catch (java.text.ParseException jtpex) {
+                        Log.e("ParsingDDL", jtpex.getLocalizedMessage());
+                    }
 
                     CardView cardView = new CardView(mContext);
                     cardView.setClickable(true);
                     cardView.setUseCompatPadding(true);
                     cardView.setRadius(dp8);
-                    cardView.setContentPadding(dp8, dp8, dp8, dp8);
                     cardView.setCardElevation(dp5);
                     cardView.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             mBuilder.setIcon(R.drawable.ic_check_square)
-                                    .setTitle(getString(R.string.assignment_mark_finished_title))
-                                    .setMessage(getString(R.string.assignment_mark_finished_content)
+                                    .setTitle(getString(assignmentFinished ?
+                                            R.string.assignment_mark_unfinished_title : R.string.assignment_mark_finished_title))
+                                    .setMessage(getString(assignmentFinished ?
+                                            R.string.assignment_mark_unfinished_content : R.string.assignment_mark_finished_content)
                                             + "\n\n" + assignmentName)
-                                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-
-                                        }
-                                    })
+                                    .setPositiveButton(android.R.string.yes, null)
                                     .setNegativeButton(android.R.string.no, null)
                                     .show();
                         }
                     });
 
                     RelativeLayout relativeLayout = new RelativeLayout(mContext);
+                    relativeLayout.setPadding(dp8, dp8, dp8, dp8);
+                    if (assignmentFinished) {
+                        relativeLayout.setBackground(getDrawable(R.drawable.background_success));
+                    } else if (assignmentDDLDate.before(new Date(now.getTime() + 24*60*60*1000))) {
+                        relativeLayout.setBackground(getDrawable(R.drawable.background_danger));
+                    } else if (assignmentDDLDate.before(new Date(now.getTime() + 48*60*60*1000))) {
+                        relativeLayout.setBackground(getDrawable(R.drawable.background_warning));
+                    }
+
                     LinearLayout linearLayout = new LinearLayout(mContext);
                     linearLayout.setOrientation(LinearLayout.VERTICAL);
                     linearLayout.setPadding(15, 10, 15, 10);
@@ -385,6 +405,7 @@ public class MainActivity extends AppCompatActivity {
                     textView.setTextColor(getColor(R.color.colorBlack));
 
                     WebView webView = new WebView(mContext);
+                    webView.setBackgroundColor(Color.TRANSPARENT);
                     webView.loadData(assignmentContent, "text/html; charset=UTF-8", null);
                     webView.setWebViewClient(new WebViewClient(){
                         public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -397,18 +418,8 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
 
-                    String oldDDLStr = null, newDDLStr = null;
-                    try {
-                        oldDDLStr = assignmentDDL;
-                        Date ddlDate = oldDateFormat.parse(oldDDLStr);
-                        List<Duration> durations = prettyTime.calculatePreciseDuration(ddlDate);
-                        if (durations.size() > 2) durations = durations.subList(0, 2);
-                        newDDLStr = newDateFormat.format(ddlDate) + "\n" + prettyTime.format(durations);
-                    } catch (java.text.ParseException jtpex) {
-                        Toast.makeText(this, jtpex.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-                    }
                     TextView textView2 = new TextView(mContext);
-                    textView2.setText(newDDLStr);
+                    textView2.setText(assignmentDDLDiff);
                     textView2.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
 
                     linearLayout.addView(textView);
@@ -416,6 +427,7 @@ public class MainActivity extends AppCompatActivity {
                     linearLayout.addView(textView2);
                     relativeLayout.addView(linearLayout);
                     cardView.addView(relativeLayout);
+
                     mLinearLayout.addView(cardView);
                 }
                 TextView textView = new TextView(mContext);
