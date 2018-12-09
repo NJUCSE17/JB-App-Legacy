@@ -67,7 +67,7 @@
                     android:fontFamily="casual"
                     android:text="@string/btn_update"
                     android:textSize="18sp"
-                    app:icon="@drawable/ic_arrow_up" />
+                    app:icon="@drawable/ic_cloud_upload_alt" />
 
             </TableRow>
 

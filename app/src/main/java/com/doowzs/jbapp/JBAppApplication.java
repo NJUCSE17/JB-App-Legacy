@@ -67,7 +67,7 @@ public class JBAppApplication extends Application {
                         try {
                             final JSONObject version = data.getJSONObject("data");
                             if (version.getInt("number") > versionCode) {
-                                builder.setIcon(R.drawable.ic_arrow_up)
+                                builder.setIcon(R.drawable.ic_cloud_upload_alt)
                                         .setTitle(getString(R.string.update_title))
                                         .setMessage(getString(R.string.update_current_version) + versionName + "\n"
                                                 + getString(R.string.update_latest_version) + version.getString("name") + "\n\n"
