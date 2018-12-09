@@ -2,12 +2,10 @@ package com.doowzs.jbapp;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -42,7 +40,7 @@ public class AboutActivity extends AppCompatActivity {
         }
 
         TextView versionTextView = findViewById(R.id.versionTextView);
-        versionTextView.setText(BuildConfig.VERSION_NAME);
+        versionTextView.setText(mApp.versionName);
 
         Button clButton = findViewById(R.id.changeLogButton);
         clButton.setOnClickListener(new View.OnClickListener() {
