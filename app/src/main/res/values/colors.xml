@@ -5,4 +5,10 @@
     <color name="colorAccent">#D81B60</color>
     <color name="colorWhite">#ffffff</color>
     <color name="colorBlack">#000000</color>
+    <color name="colorSuccessLight1">#e8f5e9</color>
+    <color name="colorSuccessLight2">#c8e6c9</color>
+    <color name="colorWarningLight1">#f9fbe7</color>
+    <color name="colorWarningLight2">#f0f4c3</color>
+    <color name="colorDangerLight1">#fbe9e7</color>
+    <color name="colorDangerLight2">#ffccbc</color>
 </resources>
