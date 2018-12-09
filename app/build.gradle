@@ -7,7 +7,7 @@ android {
     def value = 0
     Properties versionProps = new Properties()
     if (!versionPropsFile.exists()) {
-        versionProps['VERSION_PATCH'] = "0"
+        versionProps['VERSION_PATCH'] = "-1"
         versionProps['VERSION_NUMBER'] = "0"
         versionProps['VERSION_BUILD'] = "-1"
         // I set it to minus one so the first build is 0 which isn't super important.
@@ -15,7 +15,7 @@ android {
     }
 
     def runTasks = gradle.startParameter.taskNames
-    if ('assembleRelease' in runTasks) {
+    if (':app:assembleRelease' in runTasks) {
         value = 1
     }
 
