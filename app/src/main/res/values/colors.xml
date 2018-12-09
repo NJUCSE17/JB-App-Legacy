@@ -5,6 +5,7 @@
     <color name="colorAccent">#D81B60</color>
     <color name="colorWhite">#ffffff</color>
     <color name="colorBlack">#000000</color>
+    <color name="colorDefaultBackend">#fafafa</color>
     <color name="colorAmberLighten5">#fff8e1</color>
     <color name="colorBlueLighten5">#e3f2fd</color>
     <color name="colorGreenLighten5">#e8f5e9</color>
