@@ -14,6 +14,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
@@ -23,6 +24,7 @@ import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -275,6 +277,16 @@ public class MainActivity extends AppCompatActivity {
 
                     WebView webView = new WebView(mContext);
                     webView.loadData(assignmentObject.getString("content"), "text/html; charset=UTF-8", null);
+                    webView.setWebViewClient(new WebViewClient(){
+                        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                            if (url != null && (url.startsWith("http://") || url.startsWith("https://"))) {
+                                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        }
+                    });
 
                     String oldDDLStr = null, newDDLStr = null;
                     try {

@@ -53,6 +53,10 @@
 
     <!-- Change Log -->
     <string name="string_changelog" translatable="false">
+        v0.1 2018-12-09
+        \n - Check update of app using API
+        \n - Code rebase
+
         v0.0 2018-12-07
         \n - Sign in/out using JB Online\'s APIs
         \n - Fetch ongoing assignments and list in CardViews
